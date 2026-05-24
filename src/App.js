@@ -189,7 +189,7 @@ function PopupAereo({ aereo, collezionato, onColleziona }) {
 
   return (
     <div className="popup">
-      <h3>{getIcona(aereo.categoria, false)} {aereo.callsign}</h3>
+   <h3>{aereo.tipo === 'elicottero' ? '🚁' : '✈️'} {aereo.callsign}</h3>
       <div className="popup-foto">
         {loadingFoto && <div className="foto-loading">📸 Cerco foto...</div>}
         {!loadingFoto && foto && (
@@ -375,7 +375,15 @@ function PaginaLogbook({ logbook, onChiudi, onRimuovi }) {
   return (
     <div className="logbook-pagina">
       <div className="logbook-pagina-header">
-        <img src={logo} alt="SkyDex" className="logo" />
+        <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="45" fill="none" stroke="#4a9fd4" strokeWidth="4"/>
+  <circle cx="50" cy="50" r="8" fill="#4a9fd4"/>
+  <line x1="50" y1="5" x2="50" y2="25" stroke="#4a9fd4" strokeWidth="3"/>
+  <line x1="50" y1="75" x2="50" y2="95" stroke="#4a9fd4" strokeWidth="3"/>
+  <line x1="5" y1="50" x2="25" y2="50" stroke="#4a9fd4" strokeWidth="3"/>
+  <line x1="75" y1="50" x2="95" y2="50" stroke="#4a9fd4" strokeWidth="3"/>
+  <path d="M50 20 C48 20 46 22 46 24 L45 38 L30 46 L30 50 L45 46 L46 56 L41 58 L41 61 L50 59 L59 61 L59 58 L54 56 L55 46 L70 50 L70 46 L55 38 L54 24 C54 22 52 20 50 20Z" fill="#4a9fd4"/>
+</svg> alt="SkyDex" className="logo" />
         <span className="contatore">{logbook.length} aerei collezionati</span>
         <button className="logbook-chiudi" onClick={onChiudi}>✕ Chiudi</button>
       </div>
@@ -523,7 +531,15 @@ function App() {
   return (
     <div className="app">
       <div className="header">
-        <img src={logo} alt="SkyDex" className="logo" />
+        <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="50" cy="50" r="45" fill="none" stroke="#4a9fd4" strokeWidth="4"/>
+  <circle cx="50" cy="50" r="8" fill="#4a9fd4"/>
+  <line x1="50" y1="5" x2="50" y2="25" stroke="#4a9fd4" strokeWidth="3"/>
+  <line x1="50" y1="75" x2="50" y2="95" stroke="#4a9fd4" strokeWidth="3"/>
+  <line x1="5" y1="50" x2="25" y2="50" stroke="#4a9fd4" strokeWidth="3"/>
+  <line x1="75" y1="50" x2="95" y2="50" stroke="#4a9fd4" strokeWidth="3"/>
+  <path d="M50 20 C48 20 46 22 46 24 L45 38 L30 46 L30 50 L45 46 L46 56 L41 58 L41 61 L50 59 L59 61 L59 58 L54 56 L55 46 L70 50 L70 46 L55 38 L54 24 C54 22 52 20 50 20Z" fill="#4a9fd4"/>
+</svg> alt="SkyDex" className="logo" />
         <div className="filtri">
           {Object.entries(CATEGORIE).map(([chiave, val]) => (
             <button key={chiave} className={`btn-filtro ${filtro === chiave ? 'attivo' : ''}`} onClick={() => setFiltro(chiave)}>
@@ -555,7 +571,7 @@ function App() {
             <Marker
               key={aereo.id}
               position={[aereo.latitudine, aereo.longitudine]}
-              icon={creaIcona(getIcona(aereo.categoria, isCollezionato(aereo.id)))}
+              icon={creaIconaSvg(aereo.tipo, isCollezionato(aereo.id))}
             >
               <Popup minWidth={220}>
                 <PopupAereo aereo={aereo} collezionato={isCollezionato(aereo.id)} onColleziona={colleziona} />
