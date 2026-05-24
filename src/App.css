@@ -480,3 +480,244 @@ body { background: #0a1628; font-family: 'Courier New', monospace; }
   color: #4a9fd4;
   border-color: #4a9fd4;
 }
+.profilo-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.profilo-card {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  background: #0d1e33;
+  border: 1px solid #2d6ea833;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.profilo-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profilo-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #4a9fd4;
+}
+
+.profilo-avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #071828;
+  border: 2px solid #2d6ea844;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}
+
+.profilo-avatar-edit {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #4a9fd4;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.7rem;
+}
+
+.profilo-info { flex: 1; }
+
+.profilo-nome-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.profilo-nome {
+  color: #ffffff;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+}
+
+.profilo-edit-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 2px;
+}
+
+.profilo-titolo {
+  color: #4a9fd4;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  margin-bottom: 2px;
+}
+
+.profilo-livello {
+  color: #2d4a6a;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+}
+
+.profilo-nome-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profilo-input {
+  background: #071828;
+  border: 1px solid #4a9fd444;
+  color: #ffffff;
+  padding: 6px 10px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  outline: none;
+}
+
+.profilo-punti-card {
+  background: #0d1e33;
+  border: 1px solid #2d6ea833;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.profilo-punti-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.profilo-punti-label {
+  color: #4a6fa5;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+}
+
+.profilo-punti-valore {
+  color: #4a9fd4;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.profilo-barra-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profilo-barra {
+  height: 6px;
+  background: #071828;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.profilo-barra-fill {
+  height: 100%;
+  background: #4a9fd4;
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.profilo-barra-label {
+  color: #2d4a6a;
+  font-size: 0.7rem;
+  text-align: right;
+}
+
+.profilo-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.profilo-stat {
+  background: #0d1e33;
+  border: 1px solid #2d6ea833;
+  border-radius: 8px;
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.profilo-stat-valore {
+  color: #4a9fd4;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.profilo-stat-label {
+  color: #2d4a6a;
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+}
+
+.profilo-sezione {
+  margin-bottom: 20px;
+}
+
+.profilo-sezione-titolo {
+  color: #4a6fa5;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.profilo-sezione-vuoto {
+  color: #2d4a6a;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 20px;
+}
+
+.badge-griglia {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.badge-card {
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.badge-card.sbloccato {
+  background: #0d1e33;
+  border: 1px solid #4a9fd444;
+}
+
+.badge-card.bloccato {
+  background: #071020;
+  border: 1px solid #1a2a3a;
+  opacity: 0.5;
+}
+
+.badge-emoji { font-size: 1.8rem; }
+.badge-nome { color: #4a9fd4; font-size: 0.8rem; font-weight: bold; letter-spacing: 1px; }
+.badge-desc { color: #2d4a6a; font-size: 0.7rem; }

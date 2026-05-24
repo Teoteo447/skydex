@@ -16,6 +16,60 @@ const getTipo = (categoria) => {
   return 'aereo';
 };
 
+const PUNTI_MODELLO = {
+  'Airbus A380-800': 15, 'Boeing 747-400': 15, 'Boeing 747-800': 15,
+  'Antonov An-124': 15,
+  'Boeing 787-8': 8, 'Boeing 787-9': 8, 'Boeing 787-10': 8,
+  'Airbus A350-900': 8, 'Airbus A350-1000': 8,
+  'Airbus A340-300': 8, 'Airbus A340-600': 8,
+  'Boeing 777-200': 6, 'Boeing 777-300': 6, 'Boeing 777-300ER': 6,
+  'Airbus A330-200': 6, 'Airbus A330-300': 6,
+  'Boeing 767-200': 6, 'Boeing 767-300': 6,
+  'Lockheed C-130': 10, 'Boeing C-17': 10, 'Boeing P-8': 10,
+  'F-15 Eagle': 10, 'F-16 Falcon': 10, 'F/A-18 Hornet': 10,
+  'Boeing E-3 Sentry': 10, 'Boeing RC-135': 10,
+  'ATR 42-300': 4, 'ATR 42-500': 4, 'ATR 72-200': 4,
+  'ATR 72-500': 4, 'ATR 72-600': 4,
+  'Bombardier CRJ-200': 4, 'Bombardier CRJ-700': 4, 'Bombardier CRJ-900': 4,
+  'Dash 8-100': 4, 'Dash 8-200': 4, 'Dash 8-300': 4, 'Dash 8-400': 4,
+  'Fokker 100': 4, 'Fokker 70': 4,
+  'Cessna 172': 3, 'Cessna 208': 3, 'Cirrus SR22': 3, 'Cirrus SR20': 3,
+  'Piper PA-28': 3, 'Piper PA-44': 3,
+};
+
+const LIVELLI = [
+  { min: 0,    max: 20,    livello: 1, titolo: 'Apprendista Spotter' },
+  { min: 21,   max: 50,    livello: 2, titolo: 'Spotter Junior' },
+  { min: 51,   max: 100,   livello: 3, titolo: 'Spotter' },
+  { min: 101,  max: 200,   livello: 4, titolo: 'Spotter Esperto' },
+  { min: 201,  max: 500,   livello: 5, titolo: 'Cacciatore di Cieli' },
+  { min: 501,  max: 1000,  livello: 6, titolo: 'Maestro dei Cieli' },
+  { min: 1001, max: 99999, livello: 7, titolo: 'Leggenda SkyDex' },
+];
+
+const calcolaPunti = (aereo) => {
+  if (aereo.tipo === 'elicottero') return 5;
+  if (PUNTI_MODELLO[aereo.modello]) return PUNTI_MODELLO[aereo.modello];
+  if (aereo.modello && (aereo.modello.includes('Boeing 737') || aereo.modello.includes('Airbus A320') ||
+    aereo.modello.includes('Airbus A319') || aereo.modello.includes('Airbus A321') ||
+    aereo.modello.includes('Boeing 757'))) return 2;
+  return 2;
+};
+
+const calcolaLivello = (puntiTotali) => {
+  return LIVELLI.find(l => puntiTotali >= l.min && puntiTotali <= l.max) || LIVELLI[0];
+};
+
+const BADGES = [
+  { id: 'primo_volo', emoji: '🛩️', nome: 'Primo Volo', descrizione: 'Primo aereo collezionato', check: (lb) => lb.length >= 1 },
+  { id: 'cacciatore', emoji: '🚁', nome: 'Cacciatore', descrizione: 'Primo elicottero avvistato', check: (lb) => lb.some(a => a.tipo === 'elicottero') },
+  { id: 'cacciatore_reale', emoji: '👑', nome: 'Cacciatore Reale', descrizione: 'Avvista un A380', check: (lb) => lb.some(a => a.modello === 'Airbus A380-800') },
+  { id: 'globetrotter', emoji: '🌍', nome: 'Globetrotter', descrizione: '10 paesi diversi', check: (lb) => new Set(lb.map(a => a.paese)).size >= 10 },
+  { id: 'fotografo', emoji: '📸', nome: 'Fotografo', descrizione: '10 foto scattate', check: (lb) => lb.filter(a => a.fotoUtente).length >= 10 },
+  { id: 'collezionista', emoji: '⭐', nome: 'Collezionista', descrizione: '50 aerei collezionati', check: (lb) => lb.length >= 50 },
+  { id: 'leggenda', emoji: '🏆', nome: 'Leggenda', descrizione: 'Raggiungi livello 7', check: (lb, punti) => punti >= 1001 },
+];
+
 const creaIcona = (tipo, collezionato) => {
   if (collezionato) return new L.DivIcon({ html: '⭐', className: '', iconSize: [24,24], iconAnchor: [12,12] });
   if (tipo === 'elicottero') return new L.DivIcon({ html: '🚁', className: '', iconSize: [24,24], iconAnchor: [12,12] });
@@ -415,6 +469,157 @@ function CentraGps({ posizione }) {
   return null;
 }
 
+function PaginaProfilo({ logbook, onChiudi }) {
+  const [nome, setNome] = useState(() => localStorage.getItem('skydex-nome') || '');
+  const [fotoProfilo, setFotoProfilo] = useState(() => localStorage.getItem('skydex-foto') || null);
+  const [modificaNome, setModificaNome] = useState(false);
+  const [nomeTemp, setNomeTemp] = useState(nome);
+
+  const puntiTotali = logbook.reduce((tot, a) => tot + calcolaPunti(a), 0);
+  const livello = calcolaLivello(puntiTotali);
+  const badgesSbloccati = BADGES.filter(b => b.check(logbook, puntiTotali));
+  const badgesBloccati = BADGES.filter(b => !b.check(logbook, puntiTotali));
+  const progressione = ((puntiTotali - livello.min) / (livello.max - livello.min)) * 100;
+
+  const salvaNome = () => {
+    setNome(nomeTemp);
+    localStorage.setItem('skydex-nome', nomeTemp);
+    setModificaNome(false);
+  };
+
+  const gestisciFotoProfilo = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const canvas = document.createElement('canvas');
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = 200; canvas.height = 200;
+        const ctx = canvas.getContext('2d');
+        const size = Math.min(img.width, img.height);
+        const x = (img.width - size) / 2;
+        const y = (img.height - size) / 2;
+        ctx.drawImage(img, x, y, size, size, 0, 0, 200, 200);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        setFotoProfilo(dataUrl);
+        localStorage.setItem('skydex-foto', dataUrl);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="logbook-pagina">
+      <div className="logbook-pagina-header">
+        <img src={logo} alt="SkyDex" className="logo" />
+        <span className="contatore">PROFILO</span>
+        <button className="logbook-chiudi" onClick={onChiudi}>✕ Chiudi</button>
+      </div>
+
+      <div className="profilo-scroll">
+        <div className="profilo-card">
+          <div className="profilo-avatar-wrap">
+            {fotoProfilo
+              ? <img src={fotoProfilo} alt="profilo" className="profilo-avatar" />
+              : <div className="profilo-avatar-placeholder">👤</div>
+            }
+            <label className="profilo-avatar-edit">
+              📸
+              <input type="file" accept="image/*" onChange={gestisciFotoProfilo} style={{ display: 'none' }} />
+            </label>
+          </div>
+
+          <div className="profilo-info">
+            {modificaNome ? (
+              <div className="profilo-nome-edit">
+                <input
+                  className="profilo-input"
+                  value={nomeTemp}
+                  onChange={(e) => setNomeTemp(e.target.value)}
+                  placeholder="Il tuo nome..."
+                  autoFocus
+                />
+                <button className="btn-colleziona" onClick={salvaNome}>✓ Salva</button>
+              </div>
+            ) : (
+              <div className="profilo-nome-wrap">
+                <h2 className="profilo-nome">{nome || 'Spotter Anonimo'}</h2>
+                <button className="profilo-edit-btn" onClick={() => setModificaNome(true)}>✏️</button>
+              </div>
+            )}
+            <p className="profilo-titolo">{livello.titolo}</p>
+            <p className="profilo-livello">LIVELLO {livello.livello}</p>
+          </div>
+        </div>
+
+        <div className="profilo-punti-card">
+          <div className="profilo-punti-header">
+            <span className="profilo-punti-label">PUNTI TOTALI</span>
+            <span className="profilo-punti-valore">{puntiTotali} pt</span>
+          </div>
+          <div className="profilo-barra-wrap">
+            <div className="profilo-barra">
+              <div className="profilo-barra-fill" style={{ width: `${Math.min(progressione, 100)}%` }} />
+            </div>
+            <span className="profilo-barra-label">{livello.min} — {livello.max} pt</span>
+          </div>
+        </div>
+
+        <div className="profilo-stats-row">
+          <div className="profilo-stat">
+            <span className="profilo-stat-valore">{logbook.length}</span>
+            <span className="profilo-stat-label">Aerei</span>
+          </div>
+          <div className="profilo-stat">
+            <span className="profilo-stat-valore">{new Set(logbook.map(a => a.paese)).size}</span>
+            <span className="profilo-stat-label">Paesi</span>
+          </div>
+          <div className="profilo-stat">
+            <span className="profilo-stat-valore">{new Set(logbook.map(a => a.modello).filter(m => m && m !== 'N/D')).size}</span>
+            <span className="profilo-stat-label">Modelli</span>
+          </div>
+          <div className="profilo-stat">
+            <span className="profilo-stat-valore">{badgesSbloccati.length}</span>
+            <span className="profilo-stat-label">Badge</span>
+          </div>
+        </div>
+
+        <div className="profilo-sezione">
+          <h3 className="profilo-sezione-titolo">🏅 BADGE SBLOCCATI</h3>
+          {badgesSbloccati.length === 0 ? (
+            <p className="profilo-sezione-vuoto">Colleziona aerei per sbloccare badge!</p>
+          ) : (
+            <div className="badge-griglia">
+              {badgesSbloccati.map(b => (
+                <div key={b.id} className="badge-card sbloccato">
+                  <span className="badge-emoji">{b.emoji}</span>
+                  <span className="badge-nome">{b.nome}</span>
+                  <span className="badge-desc">{b.descrizione}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="profilo-sezione">
+          <h3 className="profilo-sezione-titolo">🔒 BADGE BLOCCATI</h3>
+          <div className="badge-griglia">
+            {badgesBloccati.map(b => (
+              <div key={b.id} className="badge-card bloccato">
+                <span className="badge-emoji">🔒</span>
+                <span className="badge-nome">{b.nome}</span>
+                <span className="badge-desc">{b.descrizione}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [aerei, setAerei] = useState([]);
   const [status, setStatus] = useState('Caricamento...');
@@ -424,11 +629,13 @@ function App() {
     return salvato ? JSON.parse(salvato) : [];
   });
   const [mostraLogbook, setMostraLogbook] = useState(false);
+  const [mostraProfilo, setMostraProfilo] = useState(false);
   const [posizione, setPosizione] = useState(null);
   const [gpsAttivo, setGpsAttivo] = useState(false);
   const [gpsStatus, setGpsStatus] = useState('');
   const [mostraImpostazioni, setMostraImpostazioni] = useState(false);
-const [mappaScura, setMappaScura] = useState(false);
+  const [mappaScura, setMappaScura] = useState(false);
+
   const fetchAerei = async () => {
     try {
       setStatus('Connessione...');
@@ -494,6 +701,10 @@ const [mappaScura, setMappaScura] = useState(false);
     return <PaginaLogbook logbook={logbook} onChiudi={() => setMostraLogbook(false)} onRimuovi={rimuovi} />;
   }
 
+  if (mostraProfilo) {
+    return <PaginaProfilo logbook={logbook} onChiudi={() => setMostraProfilo(false)} />;
+  }
+
   return (
     <div className="app">
       <div className="header">
@@ -511,41 +722,49 @@ const [mappaScura, setMappaScura] = useState(false);
             📍 {gpsAttivo ? 'GPS ON' : 'GPS'}
           </button>
           <button className="btn-impostazioni" onClick={() => setMostraImpostazioni(!mostraImpostazioni)}>
-  ⚙️
-</button>
+            ⚙️
+          </button>
           <button className="btn-logbook" onClick={() => setMostraLogbook(true)}>
             📒 LOGBOOK ({logbook.length})
           </button>
         </div>
       </div>
-{mostraImpostazioni && (
-  <div className="impostazioni-overlay" onClick={() => setMostraImpostazioni(false)}>
-    <div className="impostazioni-pannello" onClick={(e) => e.stopPropagation()}>
-      <div className="impostazioni-header">
-        <h2 className="impostazioni-titolo">⚙️ IMPOSTAZIONI</h2>
-        <button className="scheda-chiudi" onClick={() => setMostraImpostazioni(false)}>✕</button>
-      </div>
-      <div className="impostazioni-voce">
-        <span className="impostazioni-label">🌙 Mappa scura</span>
-        <button
-          className={`toggle ${mappaScura ? 'attivo' : ''}`}
-          onClick={() => setMappaScura(!mappaScura)}
-        >
-          {mappaScura ? 'ON' : 'OFF'}
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+
+      {mostraImpostazioni && (
+        <div className="impostazioni-overlay" onClick={() => setMostraImpostazioni(false)}>
+          <div className="impostazioni-pannello" onClick={(e) => e.stopPropagation()}>
+            <div className="impostazioni-header">
+              <h2 className="impostazioni-titolo">⚙️ IMPOSTAZIONI</h2>
+              <button className="scheda-chiudi" onClick={() => setMostraImpostazioni(false)}>✕</button>
+            </div>
+            <div className="impostazioni-voce">
+              <span className="impostazioni-label">👤 Profilo</span>
+              <button className="toggle" onClick={() => { setMostraImpostazioni(false); setMostraProfilo(true); }}>
+                APRI
+              </button>
+            </div>
+            <div className="impostazioni-voce">
+              <span className="impostazioni-label">🌙 Mappa scura</span>
+              <button
+                className={`toggle ${mappaScura ? 'attivo' : ''}`}
+                onClick={() => setMappaScura(!mappaScura)}
+              >
+                {mappaScura ? 'ON' : 'OFF'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="contenuto">
         <MapContainer center={[45.4642, 9.1900]} zoom={7} style={{ height: '100%', width: '100%' }}>
           <TileLayer
-  url={mappaScura
-    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-  }
-  attribution='© OpenStreetMap © CARTO'
-/> attribution='© OpenStreetMap © CARTO' />
+            url={mappaScura
+              ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+              : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            }
+            attribution='© OpenStreetMap © CARTO'
+          />
           {posizione && <CentraGps posizione={posizione} />}
           {posizione && (
             <Marker position={[posizione.lat, posizione.lng]} icon={iconaGps}>
