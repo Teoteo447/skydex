@@ -427,7 +427,8 @@ function App() {
   const [posizione, setPosizione] = useState(null);
   const [gpsAttivo, setGpsAttivo] = useState(false);
   const [gpsStatus, setGpsStatus] = useState('');
-
+  const [mostraImpostazioni, setMostraImpostazioni] = useState(false);
+const [mappaScura, setMappaScura] = useState(false);
   const fetchAerei = async () => {
     try {
       setStatus('Connessione...');
@@ -509,15 +510,42 @@ function App() {
           <button className={`btn-gps ${gpsAttivo ? 'attivo' : ''}`} onClick={attivaGps}>
             📍 {gpsAttivo ? 'GPS ON' : 'GPS'}
           </button>
+          <button className="btn-impostazioni" onClick={() => setMostraImpostazioni(!mostraImpostazioni)}>
+  ⚙️
+</button>
           <button className="btn-logbook" onClick={() => setMostraLogbook(true)}>
             📒 LOGBOOK ({logbook.length})
           </button>
         </div>
       </div>
-
+{mostraImpostazioni && (
+  <div className="impostazioni-overlay" onClick={() => setMostraImpostazioni(false)}>
+    <div className="impostazioni-pannello" onClick={(e) => e.stopPropagation()}>
+      <div className="impostazioni-header">
+        <h2 className="impostazioni-titolo">⚙️ IMPOSTAZIONI</h2>
+        <button className="scheda-chiudi" onClick={() => setMostraImpostazioni(false)}>✕</button>
+      </div>
+      <div className="impostazioni-voce">
+        <span className="impostazioni-label">🌙 Mappa scura</span>
+        <button
+          className={`toggle ${mappaScura ? 'attivo' : ''}`}
+          onClick={() => setMappaScura(!mappaScura)}
+        >
+          {mappaScura ? 'ON' : 'OFF'}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
       <div className="contenuto">
         <MapContainer center={[45.4642, 9.1900]} zoom={7} style={{ height: '100%', width: '100%' }}>
-          <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" attribution='© OpenStreetMap © CARTO' />
+          <TileLayer
+  url={mappaScura
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+  }
+  attribution='© OpenStreetMap © CARTO'
+/> attribution='© OpenStreetMap © CARTO' />
           {posizione && <CentraGps posizione={posizione} />}
           {posizione && (
             <Marker position={[posizione.lat, posizione.lng]} icon={iconaGps}>

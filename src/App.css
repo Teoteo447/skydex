@@ -405,3 +405,78 @@ body { background: #0a1628; font-family: 'Courier New', monospace; }
   font-size: 0.65rem;
   text-align: center;
 }
+.btn-impostazioni {
+  background: transparent;
+  border: 1px solid #2d6ea833;
+  color: #4a6fa5;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  border-radius: 4px;
+}
+.btn-impostazioni:hover { border-color: #4a9fd4; color: #4a9fd4; }
+
+.impostazioni-overlay {
+  position: fixed;
+  inset: 0;
+  background: #00000066;
+  z-index: 9998;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 60px 16px 0 0;
+}
+
+.impostazioni-pannello {
+  background: #0d1e33;
+  border: 1px solid #2d6ea844;
+  border-radius: 12px;
+  width: 280px;
+  padding: 20px;
+}
+
+.impostazioni-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.impostazioni-titolo {
+  color: #4a9fd4;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+}
+
+.impostazioni-voce {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #2d6ea822;
+}
+
+.impostazioni-label {
+  color: #aabbcc;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.toggle {
+  background: #1a2a3a;
+  color: #4a6fa5;
+  border: 1px solid #2d6ea844;
+  padding: 4px 14px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  border-radius: 20px;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.toggle.attivo {
+  background: #4a9fd422;
+  color: #4a9fd4;
+  border-color: #4a9fd4;
+}
