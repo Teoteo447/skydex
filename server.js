@@ -35,7 +35,7 @@ app.get('/api/aerei', async (req, res) => {
         a.track || null,
         null, null, null,
         null, null, null,
-        a.category || 0,
+        a.category === 'A7' ? 7 : a.category === 'B1' ? 10 : 0,
       ]);
 
     res.json({ states });
