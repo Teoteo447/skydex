@@ -33,8 +33,11 @@ const svgElicottero = (colore) => `
   </g>
 </svg>`;
 
-const creaIconaSvg = (tipo, collezionato) => {
-  let colore;
+const creaIcona = (tipo, collezionato) => {
+  if (collezionato) return new L.DivIcon({ html: '⭐', className: '', iconSize: [24,24], iconAnchor: [12,12] });
+  if (tipo === 'elicottero') return new L.DivIcon({ html: '🚁', className: '', iconSize: [24,24], iconAnchor: [12,12] });
+  return new L.DivIcon({ html: '✈️', className: '', iconSize: [24,24], iconAnchor: [12,12] });
+};  let colore;
   if (collezionato) colore = '#FFD700';
   else if (tipo === 'elicottero') colore = '#00cc66';
   else colore = '#4a9fd4';
@@ -571,8 +574,7 @@ function App() {
             <Marker
               key={aereo.id}
               position={[aereo.latitudine, aereo.longitudine]}
-              icon={creaIconaSvg(aereo.tipo, isCollezionato(aereo.id))}
-            >
+icon={creaIcona(aereo.tipo, isCollezionato(aereo.id))}            >
               <Popup minWidth={220}>
                 <PopupAereo aereo={aereo} collezionato={isCollezionato(aereo.id)} onColleziona={colleziona} />
               </Popup>
