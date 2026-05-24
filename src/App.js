@@ -3,34 +3,50 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './App.css';
-import logo from './skydex_logo.png';
 
 const CATEGORIE = {
   tutti: { label: '🌍 Tutti' },
   aereo: { label: '✈️ Aerei' },
   elicottero: { label: '🚁 Elicotteri' },
-  drone: { label: '🛸 Droni' },
-};
-
-const getIcona = (categoria, collezionato) => {
-  if (collezionato) return '⭐';
-  if (categoria === 7) return '🚁';
-  if (categoria === 10) return '🛸';
-  return '✈️';
 };
 
 const getTipo = (categoria) => {
   if (categoria === 7) return 'elicottero';
-  if (categoria === 10) return 'drone';
   return 'aereo';
 };
 
-const creaIcona = (emoji) => new L.DivIcon({
-  html: emoji,
-  className: '',
-  iconSize: [24, 24],
-  iconAnchor: [12, 12],
-});
+const svgAereo = (colore) => `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
+  <g fill="${colore}" stroke="rgba(0,0,0,0.3)" stroke-width="1">
+    <path d="M50 5 C48 5 46 7 46 10 L44 40 L10 58 L10 65 L44 55 L45 75 L35 80 L35 85 L50 82 L65 85 L65 80 L55 75 L56 55 L90 65 L90 58 L56 40 L54 10 C54 7 52 5 50 5Z"/>
+  </g>
+</svg>`;
+
+const svgElicottero = (colore) => `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
+  <g fill="${colore}" stroke="rgba(0,0,0,0.3)" stroke-width="1">
+    <rect x="20" y="45" width="60" height="12" rx="6"/>
+    <ellipse cx="50" cy="35" rx="12" ry="10"/>
+    <rect x="5" y="32" width="90" height="5" rx="2.5"/>
+    <rect x="55" y="52" width="4" height="20" rx="2"/>
+    <rect x="50" y="70" width="14" height="4" rx="2"/>
+  </g>
+</svg>`;
+
+const creaIconaSvg = (tipo, collezionato) => {
+  let colore;
+  if (collezionato) colore = '#FFD700';
+  else if (tipo === 'elicottero') colore = '#00cc66';
+  else colore = '#4a9fd4';
+
+  const svg = tipo === 'elicottero' ? svgElicottero(colore) : svgAereo(colore);
+  return new L.DivIcon({
+    html: svg,
+    className: '',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+  });
+};
 
 const iconaGps = new L.DivIcon({
   html: '📍',
@@ -39,7 +55,6 @@ const iconaGps = new L.DivIcon({
   iconAnchor: [14, 14],
 });
 
-// Comprime immagine a thumbnail base64
 const comprImmagine = (file) => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onload = (e) => {
@@ -50,8 +65,7 @@ const comprImmagine = (file) => new Promise((resolve, reject) => {
       let w = img.width, h = img.height;
       if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
       else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
-      canvas.width = w;
-      canvas.height = h;
+      canvas.width = w; canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
       resolve(canvas.toDataURL('image/jpeg', 0.7));
@@ -63,49 +77,36 @@ const comprImmagine = (file) => new Promise((resolve, reject) => {
   reader.readAsDataURL(file);
 });
 
-// Verifica furba — controlla luminosità e contrasto
 const verificaFoto = (base64) => new Promise((resolve) => {
   const img = new Image();
   img.onload = () => {
     const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
+    canvas.width = img.width; canvas.height = img.height;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(img, 0, 0);
-
     const dati = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-    let luminosita = 0;
-    let min = 255, max = 0;
-
+    let luminosita = 0, min = 255, max = 0;
     for (let i = 0; i < dati.length; i += 4) {
       const l = (dati[i] + dati[i+1] + dati[i+2]) / 3;
       luminosita += l;
       if (l < min) min = l;
       if (l > max) max = l;
     }
-
     luminosita = luminosita / (dati.length / 4);
     const contrasto = max - min;
-
-    // Foto troppo scura o senza contrasto = probabilmente non è un aereo
     if (luminosita < 30) { resolve({ ok: false, motivo: 'Foto troppo scura!' }); return; }
     if (contrasto < 40) { resolve({ ok: false, motivo: 'Foto troppo uniforme!' }); return; }
-
-    // Controlla zona superiore — deve essere più chiara (cielo)
     const zonaAlta = ctx.getImageData(0, 0, canvas.width, Math.floor(canvas.height * 0.3)).data;
     let luceAlta = 0;
     for (let i = 0; i < zonaAlta.length; i += 4) {
       luceAlta += (zonaAlta[i] + zonaAlta[i+1] + zonaAlta[i+2]) / 3;
     }
     luceAlta = luceAlta / (zonaAlta.length / 4);
-
     if (luceAlta < 80) { resolve({ ok: false, motivo: 'Non sembra il cielo in alto!' }); return; }
-
     resolve({ ok: true });
   };
   img.src = base64;
 });
-
 function StatBox({ emoji, valore, label }) {
   return (
     <div className="stat-box">
