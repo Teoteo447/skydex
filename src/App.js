@@ -281,7 +281,7 @@ function App() {
       const data = await res.json();
       if (!data.states) { setStatus('Nessun aereo ricevuto'); return; }
       const voli = data.states
-        .filter(s => s[5] != null && s[6] != null)
+       .filter(s => s[5] != null && s[6] != null)
         .map(s => ({
           id: s[0],
           callsign: s[1]?.trim() || 'N/D',
@@ -293,11 +293,8 @@ function App() {
           rotta: s[10] ? Math.round(s[10]) : 0,
           categoria: s[17] || 0,
           tipo: getTipo(s[17] || 0),
+          modello: s[18] || 'N/D',
         }));
-      setStatus(`${voli.length} AEREI IN VOLO`);
-      setAerei(voli);
-    } catch (err) { setStatus(`ERRORE: ${err.message}`); }
-  };
 
   useEffect(() => {
     fetchAerei();
