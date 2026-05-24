@@ -211,7 +211,7 @@ function PaginaLogbook({ logbook, onChiudi, onRimuovi }) {
   const [modelloSelezionato, setModelloSelezionato] = useState(null);
 
   const modelli = logbook.reduce((acc, aereo) => {
-    const chiave = aereo.callsign !== 'N/D' ? aereo.callsign : aereo.id;
+    const chiave = (aereo.modello && aereo.modello !== 'N/D') ? aereo.modello : (aereo.callsign !== 'N/D' ? aereo.callsign : aereo.id);
     if (!acc[chiave]) acc[chiave] = [];
     acc[chiave].push(aereo);
     return acc;
@@ -355,6 +355,7 @@ function App() {
             >
               <Popup minWidth={220}>
                 <PopupAereo aereo={aereo} collezionato={isCollezionato(aereo.id)} onColleziona={colleziona} />
+                <p>🛩️ Modello: {aereo.modello}</p>
               </Popup>
             </Marker>
           ))}
