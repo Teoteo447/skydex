@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './App.css';
+import logo from './skydex_logo.png';
 
 const CATEGORIE = {
   tutti: { label: '🌍 Tutti' },
@@ -15,40 +16,10 @@ const getTipo = (categoria) => {
   return 'aereo';
 };
 
-const svgAereo = (colore) => `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
-  <g fill="${colore}" stroke="rgba(0,0,0,0.3)" stroke-width="1">
-    <path d="M50 5 C48 5 46 7 46 10 L44 40 L10 58 L10 65 L44 55 L45 75 L35 80 L35 85 L50 82 L65 85 L65 80 L55 75 L56 55 L90 65 L90 58 L56 40 L54 10 C54 7 52 5 50 5Z"/>
-  </g>
-</svg>`;
-
-const svgElicottero = (colore) => `
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="32" height="32">
-  <g fill="${colore}" stroke="rgba(0,0,0,0.3)" stroke-width="1">
-    <rect x="20" y="45" width="60" height="12" rx="6"/>
-    <ellipse cx="50" cy="35" rx="12" ry="10"/>
-    <rect x="5" y="32" width="90" height="5" rx="2.5"/>
-    <rect x="55" y="52" width="4" height="20" rx="2"/>
-    <rect x="50" y="70" width="14" height="4" rx="2"/>
-  </g>
-</svg>`;
-
 const creaIcona = (tipo, collezionato) => {
   if (collezionato) return new L.DivIcon({ html: '⭐', className: '', iconSize: [24,24], iconAnchor: [12,12] });
   if (tipo === 'elicottero') return new L.DivIcon({ html: '🚁', className: '', iconSize: [24,24], iconAnchor: [12,12] });
   return new L.DivIcon({ html: '✈️', className: '', iconSize: [24,24], iconAnchor: [12,12] });
-};  let colore;
-  if (collezionato) colore = '#FFD700';
-  else if (tipo === 'elicottero') colore = '#00cc66';
-  else colore = '#4a9fd4';
-
-  const svg = tipo === 'elicottero' ? svgElicottero(colore) : svgAereo(colore);
-  return new L.DivIcon({
-    html: svg,
-    className: '',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-  });
 };
 
 const iconaGps = new L.DivIcon({
@@ -110,6 +81,7 @@ const verificaFoto = (base64) => new Promise((resolve) => {
   };
   img.src = base64;
 });
+
 function StatBox({ emoji, valore, label }) {
   return (
     <div className="stat-box">
@@ -192,7 +164,7 @@ function PopupAereo({ aereo, collezionato, onColleziona }) {
 
   return (
     <div className="popup">
-   <h3>{aereo.tipo === 'elicottero' ? '🚁' : '✈️'} {aereo.callsign}</h3>
+      <h3>{aereo.tipo === 'elicottero' ? '🚁' : '✈️'} {aereo.callsign}</h3>
       <div className="popup-foto">
         {loadingFoto && <div className="foto-loading">📸 Cerco foto...</div>}
         {!loadingFoto && foto && (
@@ -203,7 +175,6 @@ function PopupAereo({ aereo, collezionato, onColleziona }) {
         )}
         {!loadingFoto && !foto && <div className="foto-nessuna">📷 Nessuna foto</div>}
       </div>
-
       {aereo.modello && aereo.modello !== 'N/D' && <p>🛩️ <strong>{aereo.modello}</strong></p>}
       <p>🏷️ Tipo: {aereo.tipo}</p>
       <p>🌍 Paese: {aereo.paese}</p>
@@ -378,15 +349,7 @@ function PaginaLogbook({ logbook, onChiudi, onRimuovi }) {
   return (
     <div className="logbook-pagina">
       <div className="logbook-pagina-header">
-        <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="50" cy="50" r="45" fill="none" stroke="#4a9fd4" strokeWidth="4"/>
-  <circle cx="50" cy="50" r="8" fill="#4a9fd4"/>
-  <line x1="50" y1="5" x2="50" y2="25" stroke="#4a9fd4" strokeWidth="3"/>
-  <line x1="50" y1="75" x2="50" y2="95" stroke="#4a9fd4" strokeWidth="3"/>
-  <line x1="5" y1="50" x2="25" y2="50" stroke="#4a9fd4" strokeWidth="3"/>
-  <line x1="75" y1="50" x2="95" y2="50" stroke="#4a9fd4" strokeWidth="3"/>
-  <path d="M50 20 C48 20 46 22 46 24 L45 38 L30 46 L30 50 L45 46 L46 56 L41 58 L41 61 L50 59 L59 61 L59 58 L54 56 L55 46 L70 50 L70 46 L55 38 L54 24 C54 22 52 20 50 20Z" fill="#4a9fd4"/>
-</svg> alt="SkyDex" className="logo" />
+        <img src={logo} alt="SkyDex" className="logo" />
         <span className="contatore">{logbook.length} aerei collezionati</span>
         <button className="logbook-chiudi" onClick={onChiudi}>✕ Chiudi</button>
       </div>
@@ -400,7 +363,6 @@ function PaginaLogbook({ logbook, onChiudi, onRimuovi }) {
           <option value="tutti">🌍 Tutti</option>
           <option value="aereo">✈️ Aerei</option>
           <option value="elicottero">🚁 Elicotteri</option>
-          <option value="drone">🛸 Droni</option>
         </select>
         <span className="logbook-filtro-count">
           {Object.keys(modelli).length} modelli · {logbookFiltrato.length} avvistamenti
@@ -534,15 +496,7 @@ function App() {
   return (
     <div className="app">
       <div className="header">
-        <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="50" cy="50" r="45" fill="none" stroke="#4a9fd4" strokeWidth="4"/>
-  <circle cx="50" cy="50" r="8" fill="#4a9fd4"/>
-  <line x1="50" y1="5" x2="50" y2="25" stroke="#4a9fd4" strokeWidth="3"/>
-  <line x1="50" y1="75" x2="50" y2="95" stroke="#4a9fd4" strokeWidth="3"/>
-  <line x1="5" y1="50" x2="25" y2="50" stroke="#4a9fd4" strokeWidth="3"/>
-  <line x1="75" y1="50" x2="95" y2="50" stroke="#4a9fd4" strokeWidth="3"/>
-  <path d="M50 20 C48 20 46 22 46 24 L45 38 L30 46 L30 50 L45 46 L46 56 L41 58 L41 61 L50 59 L59 61 L59 58 L54 56 L55 46 L70 50 L70 46 L55 38 L54 24 C54 22 52 20 50 20Z" fill="#4a9fd4"/>
-</svg> alt="SkyDex" className="logo" />
+        <img src={logo} alt="SkyDex" className="logo" />
         <div className="filtri">
           {Object.entries(CATEGORIE).map(([chiave, val]) => (
             <button key={chiave} className={`btn-filtro ${filtro === chiave ? 'attivo' : ''}`} onClick={() => setFiltro(chiave)}>
@@ -574,7 +528,8 @@ function App() {
             <Marker
               key={aereo.id}
               position={[aereo.latitudine, aereo.longitudine]}
-icon={creaIcona(aereo.tipo, isCollezionato(aereo.id))}            >
+              icon={creaIcona(aereo.tipo, isCollezionato(aereo.id))}
+            >
               <Popup minWidth={220}>
                 <PopupAereo aereo={aereo} collezionato={isCollezionato(aereo.id)} onColleziona={colleziona} />
               </Popup>
