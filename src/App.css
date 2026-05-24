@@ -281,3 +281,97 @@ body { background: #0a1628; font-family: 'Courier New', monospace; }
   color: #4a9fd4;
   border-color: #4a9fd4;
 }
+.foto-upload-area {
+  margin: 8px 0;
+}
+
+.btn-scatta {
+  display: block;
+  width: 100%;
+  background: #0d1e33;
+  color: #4a9fd4;
+  border: 1px dashed #4a9fd444;
+  padding: 8px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+.btn-scatta:hover {
+  border-color: #4a9fd4;
+  background: #4a9fd411;
+}
+
+.foto-preview-wrap {
+  position: relative;
+  margin-bottom: 6px;
+}
+
+.foto-preview {
+  width: 100%;
+  border-radius: 4px;
+  display: block;
+  border: 1px solid #4a9fd444;
+}
+
+.btn-cambia-foto {
+  width: 100%;
+  background: transparent;
+  color: #4a6fa5;
+  border: none;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+.foto-verifica {
+  color: #4a9fd4;
+  font-size: 0.8rem;
+  text-align: center;
+  margin: 4px 0;
+}
+
+.foto-errore {
+  color: #e05555;
+  font-size: 0.8rem;
+  text-align: center;
+  margin: 4px 0;
+  padding: 4px;
+  background: #e0555511;
+  border-radius: 4px;
+}
+
+.btn-colleziona-disabilitato {
+  margin-top: 8px;
+  width: 100%;
+  background: #1a2a3a;
+  color: #4a6fa5;
+  border: 1px dashed #2d6ea833;
+  padding: 6px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: not-allowed;
+  font-family: 'Courier New', monospace;
+}
+
+.scheda-foto-utente {
+  width: 100%;
+  border-radius: 6px;
+  margin: 8px 0;
+  border: 1px solid #4a9fd444;
+  display: block;
+}
+
+.carta-badge-foto {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: #0d1e33cc;
+  font-size: 0.9rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+}

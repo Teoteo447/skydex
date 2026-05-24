@@ -39,6 +39,73 @@ const iconaGps = new L.DivIcon({
   iconAnchor: [14, 14],
 });
 
+// Comprime immagine a thumbnail base64
+const comprImmagine = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const MAX = 400;
+      let w = img.width, h = img.height;
+      if (w > h) { if (w > MAX) { h = h * MAX / w; w = MAX; } }
+      else { if (h > MAX) { w = w * MAX / h; h = MAX; } }
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.onerror = reject;
+    img.src = e.target.result;
+  };
+  reader.onerror = reject;
+  reader.readAsDataURL(file);
+});
+
+// Verifica furba — controlla luminosità e contrasto
+const verificaFoto = (base64) => new Promise((resolve) => {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+
+    const dati = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let luminosita = 0;
+    let min = 255, max = 0;
+
+    for (let i = 0; i < dati.length; i += 4) {
+      const l = (dati[i] + dati[i+1] + dati[i+2]) / 3;
+      luminosita += l;
+      if (l < min) min = l;
+      if (l > max) max = l;
+    }
+
+    luminosita = luminosita / (dati.length / 4);
+    const contrasto = max - min;
+
+    // Foto troppo scura o senza contrasto = probabilmente non è un aereo
+    if (luminosita < 30) { resolve({ ok: false, motivo: 'Foto troppo scura!' }); return; }
+    if (contrasto < 40) { resolve({ ok: false, motivo: 'Foto troppo uniforme!' }); return; }
+
+    // Controlla zona superiore — deve essere più chiara (cielo)
+    const zonaAlta = ctx.getImageData(0, 0, canvas.width, Math.floor(canvas.height * 0.3)).data;
+    let luceAlta = 0;
+    for (let i = 0; i < zonaAlta.length; i += 4) {
+      luceAlta += (zonaAlta[i] + zonaAlta[i+1] + zonaAlta[i+2]) / 3;
+    }
+    luceAlta = luceAlta / (zonaAlta.length / 4);
+
+    if (luceAlta < 80) { resolve({ ok: false, motivo: 'Non sembra il cielo in alto!' }); return; }
+
+    resolve({ ok: true });
+  };
+  img.src = base64;
+});
+
 function StatBox({ emoji, valore, label }) {
   return (
     <div className="stat-box">
@@ -51,7 +118,6 @@ function StatBox({ emoji, valore, label }) {
 
 function Statistiche({ logbook }) {
   if (logbook.length === 0) return null;
-
   const paesi = new Set(logbook.map(a => a.paese).filter(Boolean));
   const modelli = new Set(logbook.map(a => a.modello).filter(m => m && m !== 'N/D'));
   const quoteValide = logbook.filter(a => typeof a.quota === 'number');
@@ -60,11 +126,9 @@ function Statistiche({ logbook }) {
     : 'N/D';
   const velocitaValide = logbook.filter(a => typeof a.velocita === 'number');
   const piuVeloce = velocitaValide.length > 0
-    ? velocitaValide.reduce((max, a) => a.velocita > max.velocita ? a : max)
-    : null;
+    ? velocitaValide.reduce((max, a) => a.velocita > max.velocita ? a : max) : null;
   const piuAlto = quoteValide.length > 0
-    ? quoteValide.reduce((max, a) => a.quota > max.quota ? a : max)
-    : null;
+    ? quoteValide.reduce((max, a) => a.quota > max.quota ? a : max) : null;
   const primo = logbook[logbook.length - 1];
 
   return (
@@ -86,6 +150,9 @@ function Statistiche({ logbook }) {
 function PopupAereo({ aereo, collezionato, onColleziona }) {
   const [foto, setFoto] = useState(null);
   const [loadingFoto, setLoadingFoto] = useState(true);
+  const [fotoUtente, setFotoUtente] = useState(null);
+  const [verificando, setVerificando] = useState(false);
+  const [errore, setErrore] = useState('');
 
   useEffect(() => {
     const fetchFoto = async () => {
@@ -98,6 +165,26 @@ function PopupAereo({ aereo, collezionato, onColleziona }) {
     };
     fetchFoto();
   }, [aereo.id]);
+
+  const gestisciFoto = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setVerificando(true);
+    setErrore('');
+    try {
+      const compressa = await comprImmagine(file);
+      const verifica = await verificaFoto(compressa);
+      if (!verifica.ok) {
+        setErrore(verifica.motivo);
+        setVerificando(false);
+        return;
+      }
+      setFotoUtente(compressa);
+    } catch (err) {
+      setErrore('Errore nel caricamento della foto');
+    }
+    setVerificando(false);
+  };
 
   return (
     <div className="popup">
@@ -112,6 +199,7 @@ function PopupAereo({ aereo, collezionato, onColleziona }) {
         )}
         {!loadingFoto && !foto && <div className="foto-nessuna">📷 Nessuna foto</div>}
       </div>
+
       {aereo.modello && aereo.modello !== 'N/D' && <p>🛩️ <strong>{aereo.modello}</strong></p>}
       <p>🏷️ Tipo: {aereo.tipo}</p>
       <p>🌍 Paese: {aereo.paese}</p>
@@ -119,12 +207,39 @@ function PopupAereo({ aereo, collezionato, onColleziona }) {
       <p>📏 Quota: {aereo.quota} m</p>
       <p>💨 Velocità: {aereo.velocita} km/h</p>
       <p>🧭 Rotta: {aereo.rotta}°</p>
+
+      {!collezionato && (
+        <div className="foto-upload-area">
+          {fotoUtente ? (
+            <div className="foto-preview-wrap">
+              <img src={fotoUtente} alt="La tua foto" className="foto-preview" />
+              <button className="btn-cambia-foto" onClick={() => setFotoUtente(null)}>
+                🔄 Cambia foto
+              </button>
+            </div>
+          ) : (
+            <label className="btn-scatta">
+              📸 Scatta o carica foto
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={gestisciFoto}
+                style={{ display: 'none' }}
+              />
+            </label>
+          )}
+          {verificando && <p className="foto-verifica">🔍 Verifico foto...</p>}
+          {errore && <p className="foto-errore">❌ {errore}</p>}
+        </div>
+      )}
+
       <button
-        className={collezionato ? 'btn-gia' : 'btn-colleziona'}
-        onClick={() => onColleziona(aereo)}
-        disabled={collezionato}
+        className={collezionato ? 'btn-gia' : (fotoUtente ? 'btn-colleziona' : 'btn-colleziona-disabilitato')}
+        onClick={() => fotoUtente && onColleziona({ ...aereo, fotoUtente })}
+        disabled={collezionato || !fotoUtente}
       >
-        {collezionato ? '⭐ Già collezionato!' : '+ Colleziona'}
+        {collezionato ? '⭐ Già collezionato!' : (fotoUtente ? '+ Colleziona' : '📸 Foto richiesta')}
       </button>
     </div>
   );
@@ -166,6 +281,9 @@ function SchedaModello({ modello, avvistamenti, onChiudi }) {
                 <span className="scheda-callsign">✈️ {a.callsign}</span>
                 <span className="scheda-orario">🕐 {a.orario}</span>
               </div>
+              {a.fotoUtente && (
+                <img src={a.fotoUtente} alt="foto" className="scheda-foto-utente" />
+              )}
               <div className="scheda-rotta-dati">
                 <span>📡 {a.id}</span>
                 <span>🌍 {a.paese}</span>
@@ -195,14 +313,17 @@ function CartaModello({ modello, avvistamenti, onClick, onRimuovi }) {
     fetchFoto();
   }, [avvistamenti]);
 
+  const fotoMostrata = avvistamenti[0].fotoUtente || (foto ? (foto.thumbnail_large?.src || foto.thumbnail?.src) : null);
+
   return (
     <div className="carta-modello" onClick={onClick}>
       <div className="carta-foto-wrap">
-        {foto
-          ? <img src={foto.thumbnail_large?.src || foto.thumbnail?.src} alt={modello} className="carta-foto" />
+        {fotoMostrata
+          ? <img src={fotoMostrata} alt={modello} className="carta-foto" />
           : <div className="carta-foto-placeholder">✈️</div>
         }
         <span className="carta-badge">{avvistamenti.length}x</span>
+        {avvistamenti[0].fotoUtente && <span className="carta-badge-foto">📸</span>}
       </div>
       <div className="carta-info">
         <p className="carta-nome">{modello}</p>
@@ -351,10 +472,7 @@ function App() {
   }, []);
 
   const attivaGps = () => {
-    if (!navigator.geolocation) {
-      setGpsStatus('GPS non supportato');
-      return;
-    }
+    if (!navigator.geolocation) { setGpsStatus('GPS non supportato'); return; }
     setGpsStatus('Cerco posizione...');
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -399,11 +517,7 @@ function App() {
         </div>
         <div className="header-destra">
           <span className="contatore">{gpsStatus || status}</span>
-          <button
-            className={`btn-gps ${gpsAttivo ? 'attivo' : ''}`}
-            onClick={attivaGps}
-            title="Trova la mia posizione"
-          >
+          <button className={`btn-gps ${gpsAttivo ? 'attivo' : ''}`} onClick={attivaGps}>
             📍 {gpsAttivo ? 'GPS ON' : 'GPS'}
           </button>
           <button className="btn-logbook" onClick={() => setMostraLogbook(true)}>
