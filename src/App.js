@@ -274,14 +274,14 @@ function App() {
   });
   const [mostraLogbook, setMostraLogbook] = useState(false);
 
-  const fetchAerei = async () => {
+ const fetchAerei = async () => {
     try {
       setStatus('Connessione...');
       const res = await fetch('https://skydex.onrender.com/api/aerei');
       const data = await res.json();
       if (!data.states) { setStatus('Nessun aereo ricevuto'); return; }
       const voli = data.states
-       .filter(s => s[5] != null && s[6] != null)
+        .filter(s => s[5] != null && s[6] != null)
         .map(s => ({
           id: s[0],
           callsign: s[1]?.trim() || 'N/D',
@@ -295,7 +295,10 @@ function App() {
           tipo: getTipo(s[17] || 0),
           modello: s[18] || 'N/D',
         }));
-
+      setStatus(`${voli.length} AEREI IN VOLO`);
+      setAerei(voli);
+    } catch (err) { setStatus(`ERRORE: ${err.message}`); }
+  };
   useEffect(() => {
     fetchAerei();
     const intervallo = setInterval(fetchAerei, 60000);
