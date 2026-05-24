@@ -259,6 +259,8 @@ function SchedaModello({ modello, avvistamenti, onChiudi }) {
     fetchFoto();
   }, [avvistamenti]);
 
+  const fotoMie = avvistamenti.filter(a => a.fotoUtente);
+
   return (
     <div className="scheda-overlay">
       <div className="scheda-contenuto">
@@ -273,6 +275,21 @@ function SchedaModello({ modello, avvistamenti, onChiudi }) {
             <p className="scheda-count">{avvistamenti.length} avvistament{avvistamenti.length === 1 ? 'o' : 'i'}</p>
           </div>
         </div>
+
+        {fotoMie.length > 0 && (
+          <div className="scheda-galleria">
+            <h3 className="scheda-rotte-titolo">📸 LE TUE FOTO</h3>
+            <div className="scheda-galleria-griglia">
+              {fotoMie.map((a, i) => (
+                <div key={i} className="scheda-galleria-item">
+                  <img src={a.fotoUtente} alt={`foto ${i+1}`} className="scheda-galleria-foto" />
+                  <p className="scheda-galleria-data">{a.orario}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <h3 className="scheda-rotte-titolo">AVVISTAMENTI</h3>
         <div className="scheda-rotte">
           {avvistamenti.map((a, i) => (
@@ -281,9 +298,6 @@ function SchedaModello({ modello, avvistamenti, onChiudi }) {
                 <span className="scheda-callsign">✈️ {a.callsign}</span>
                 <span className="scheda-orario">🕐 {a.orario}</span>
               </div>
-              {a.fotoUtente && (
-                <img src={a.fotoUtente} alt="foto" className="scheda-foto-utente" />
-              )}
               <div className="scheda-rotta-dati">
                 <span>📡 {a.id}</span>
                 <span>🌍 {a.paese}</span>
@@ -313,7 +327,8 @@ function CartaModello({ modello, avvistamenti, onClick, onRimuovi }) {
     fetchFoto();
   }, [avvistamenti]);
 
-  const fotoMostrata = avvistamenti[0].fotoUtente || (foto ? (foto.thumbnail_large?.src || foto.thumbnail?.src) : null);
+  const fotoMostrata = foto ? (foto.thumbnail_large?.src || foto.thumbnail?.src) : null;
+  const haFotoUtente = avvistamenti.some(a => a.fotoUtente);
 
   return (
     <div className="carta-modello" onClick={onClick}>
@@ -323,7 +338,7 @@ function CartaModello({ modello, avvistamenti, onClick, onRimuovi }) {
           : <div className="carta-foto-placeholder">✈️</div>
         }
         <span className="carta-badge">{avvistamenti.length}x</span>
-        {avvistamenti[0].fotoUtente && <span className="carta-badge-foto">📸</span>}
+        {haFotoUtente && <span className="carta-badge-foto">📸</span>}
       </div>
       <div className="carta-info">
         <p className="carta-nome">{modello}</p>

@@ -375,3 +375,33 @@ body { background: #0a1628; font-family: 'Courier New', monospace; }
   padding: 2px 6px;
   border-radius: 4px;
 }
+
+.scheda-galleria {
+  margin-bottom: 20px;
+}
+
+.scheda-galleria-griglia {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.scheda-galleria-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scheda-galleria-foto {
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid #4a9fd444;
+  display: block;
+}
+
+.scheda-galleria-data {
+  color: #2d4a6a;
+  font-size: 0.65rem;
+  text-align: center;
+}
