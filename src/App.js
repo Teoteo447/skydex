@@ -277,7 +277,7 @@ function App() {
   const fetchAerei = async () => {
     try {
       setStatus('Connessione...');
-      const res = await fetch('http://localhost:3001/api/aerei');
+      const res = await fetch('https://skydex.onrender.com/api/aerei');
       const data = await res.json();
       if (!data.states) { setStatus('Nessun aereo ricevuto'); return; }
       const voli = data.states
