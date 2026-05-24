@@ -232,3 +232,52 @@ body { background: #0a1628; font-family: 'Courier New', monospace; }
   color: #4a6fa5; font-size: 0.85rem;
   letter-spacing: 3px; padding: 0 24px 12px 24px;
 }
+.logbook-filtro-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: #071020;
+  border-bottom: 1px solid #2d6ea833;
+}
+
+.logbook-filtro-select {
+  background: #0d1e33;
+  color: #4a9fd4;
+  border: 1px solid #2d6ea844;
+  padding: 6px 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+.logbook-filtro-select:focus {
+  outline: none;
+  border-color: #4a9fd4;
+}
+
+.logbook-filtro-count {
+  color: #2d4a6a;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.btn-gps {
+  background: transparent;
+  color: #4a6fa5;
+  border: 1px solid #2d6ea833;
+  padding: 5px 12px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.btn-gps.attivo {
+  background: #4a9fd422;
+  color: #4a9fd4;
+  border-color: #4a9fd4;
+}

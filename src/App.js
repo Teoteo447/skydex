@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { useEffect, useState, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import './App.css';
@@ -32,6 +32,13 @@ const creaIcona = (emoji) => new L.DivIcon({
   iconAnchor: [12, 12],
 });
 
+const iconaGps = new L.DivIcon({
+  html: '📍',
+  className: '',
+  iconSize: [28, 28],
+  iconAnchor: [14, 14],
+});
+
 function StatBox({ emoji, valore, label }) {
   return (
     <div className="stat-box">
@@ -46,6 +53,7 @@ function Statistiche({ logbook }) {
   if (logbook.length === 0) return null;
 
   const paesi = new Set(logbook.map(a => a.paese).filter(Boolean));
+  const modelli = new Set(logbook.map(a => a.modello).filter(m => m && m !== 'N/D'));
   const quoteValide = logbook.filter(a => typeof a.quota === 'number');
   const quotaMedia = quoteValide.length > 0
     ? Math.round(quoteValide.reduce((s, a) => s + a.quota, 0) / quoteValide.length)
@@ -65,10 +73,11 @@ function Statistiche({ logbook }) {
       <div className="stats-griglia">
         <StatBox emoji="✈️" valore={logbook.length} label="Aerei collezionati" />
         <StatBox emoji="🌍" valore={paesi.size} label="Paesi diversi" />
+        <StatBox emoji="🛩️" valore={modelli.size} label="Modelli diversi" />
         <StatBox emoji="📏" valore={quotaMedia !== 'N/D' ? `${quotaMedia} m` : 'N/D'} label="Quota media" />
         {piuVeloce && <StatBox emoji="💨" valore={`${piuVeloce.velocita} km/h`} label={`Più veloce: ${piuVeloce.callsign}`} />}
         {piuAlto && <StatBox emoji="🏔️" valore={`${piuAlto.quota} m`} label={`Più alto: ${piuAlto.callsign}`} />}
-        {primo && <StatBox emoji="🏆" valore={primo.callsign} label={`Primo aereo — ${primo.orario}`} />}
+        {primo && <StatBox emoji="🏆" valore={primo.modello !== 'N/D' ? primo.modello : primo.callsign} label={`Primo — ${primo.orario}`} />}
       </div>
     </div>
   );
@@ -103,6 +112,7 @@ function PopupAereo({ aereo, collezionato, onColleziona }) {
         )}
         {!loadingFoto && !foto && <div className="foto-nessuna">📷 Nessuna foto</div>}
       </div>
+      {aereo.modello && aereo.modello !== 'N/D' && <p>🛩️ <strong>{aereo.modello}</strong></p>}
       <p>🏷️ Tipo: {aereo.tipo}</p>
       <p>🌍 Paese: {aereo.paese}</p>
       <p>📡 ICAO: {aereo.id}</p>
@@ -209,8 +219,14 @@ function CartaModello({ modello, avvistamenti, onClick, onRimuovi }) {
 
 function PaginaLogbook({ logbook, onChiudi, onRimuovi }) {
   const [modelloSelezionato, setModelloSelezionato] = useState(null);
+  const [filtroLogbook, setFiltroLogbook] = useState('tutti');
 
-  const modelli = logbook.reduce((acc, aereo) => {
+  const logbookFiltrato = logbook.filter(a => {
+    if (filtroLogbook === 'tutti') return true;
+    return a.tipo === filtroLogbook;
+  });
+
+  const modelli = logbookFiltrato.reduce((acc, aereo) => {
     const chiave = (aereo.modello && aereo.modello !== 'N/D') ? aereo.modello : (aereo.callsign !== 'N/D' ? aereo.callsign : aereo.id);
     if (!acc[chiave]) acc[chiave] = [];
     acc[chiave].push(aereo);
@@ -227,13 +243,28 @@ function PaginaLogbook({ logbook, onChiudi, onRimuovi }) {
         <button className="logbook-chiudi" onClick={onChiudi}>✕ Chiudi</button>
       </div>
 
+      <div className="logbook-filtro-bar">
+        <select
+          className="logbook-filtro-select"
+          value={filtroLogbook}
+          onChange={(e) => setFiltroLogbook(e.target.value)}
+        >
+          <option value="tutti">🌍 Tutti</option>
+          <option value="aereo">✈️ Aerei</option>
+          <option value="elicottero">🚁 Elicotteri</option>
+          <option value="drone">🛸 Droni</option>
+        </select>
+        <span className="logbook-filtro-count">
+          {Object.keys(modelli).length} modelli · {logbookFiltrato.length} avvistamenti
+        </span>
+      </div>
+
       <div className="logbook-scroll">
         <Statistiche logbook={logbook} />
-        {logbook.length === 0 ? (
+        {logbookFiltrato.length === 0 ? (
           <div className="logbook-vuoto-grande">
             <p>✈️</p>
-            <p>Nessun aereo collezionato ancora.</p>
-            <p>Torna sulla mappa e clicca + Colleziona!</p>
+            <p>Nessun aereo in questa categoria.</p>
           </div>
         ) : (
           <>
@@ -264,6 +295,16 @@ function PaginaLogbook({ logbook, onChiudi, onRimuovi }) {
   );
 }
 
+function CentraGps({ posizione }) {
+  const map = useMap();
+  useEffect(() => {
+    if (posizione) {
+      map.flyTo([posizione.lat, posizione.lng], 12, { duration: 1.5 });
+    }
+  }, [posizione, map]);
+  return null;
+}
+
 function App() {
   const [aerei, setAerei] = useState([]);
   const [status, setStatus] = useState('Caricamento...');
@@ -273,8 +314,11 @@ function App() {
     return salvato ? JSON.parse(salvato) : [];
   });
   const [mostraLogbook, setMostraLogbook] = useState(false);
+  const [posizione, setPosizione] = useState(null);
+  const [gpsAttivo, setGpsAttivo] = useState(false);
+  const [gpsStatus, setGpsStatus] = useState('');
 
- const fetchAerei = async () => {
+  const fetchAerei = async () => {
     try {
       setStatus('Connessione...');
       const res = await fetch('https://skydex.onrender.com/api/aerei');
@@ -299,11 +343,28 @@ function App() {
       setAerei(voli);
     } catch (err) { setStatus(`ERRORE: ${err.message}`); }
   };
+
   useEffect(() => {
     fetchAerei();
     const intervallo = setInterval(fetchAerei, 60000);
     return () => clearInterval(intervallo);
   }, []);
+
+  const attivaGps = () => {
+    if (!navigator.geolocation) {
+      setGpsStatus('GPS non supportato');
+      return;
+    }
+    setGpsStatus('Cerco posizione...');
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setPosizione({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        setGpsAttivo(true);
+        setGpsStatus('');
+      },
+      () => setGpsStatus('GPS non disponibile')
+    );
+  };
 
   const colleziona = (aereo) => {
     if (logbook.find(a => a.id === aereo.id)) return;
@@ -337,7 +398,14 @@ function App() {
           ))}
         </div>
         <div className="header-destra">
-          <span className="contatore">{status}</span>
+          <span className="contatore">{gpsStatus || status}</span>
+          <button
+            className={`btn-gps ${gpsAttivo ? 'attivo' : ''}`}
+            onClick={attivaGps}
+            title="Trova la mia posizione"
+          >
+            📍 {gpsAttivo ? 'GPS ON' : 'GPS'}
+          </button>
           <button className="btn-logbook" onClick={() => setMostraLogbook(true)}>
             📒 LOGBOOK ({logbook.length})
           </button>
@@ -347,6 +415,12 @@ function App() {
       <div className="contenuto">
         <MapContainer center={[45.4642, 9.1900]} zoom={7} style={{ height: '100%', width: '100%' }}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="© OpenStreetMap" />
+          {posizione && <CentraGps posizione={posizione} />}
+          {posizione && (
+            <Marker position={[posizione.lat, posizione.lng]} icon={iconaGps}>
+              <Popup><strong>📍 Sei qui</strong></Popup>
+            </Marker>
+          )}
           {aereiFiltrati.map(aereo => (
             <Marker
               key={aereo.id}
@@ -355,7 +429,6 @@ function App() {
             >
               <Popup minWidth={220}>
                 <PopupAereo aereo={aereo} collezionato={isCollezionato(aereo.id)} onColleziona={colleziona} />
-                <p>🛩️ Modello: {aereo.modello}</p>
               </Popup>
             </Marker>
           ))}
