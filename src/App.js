@@ -61,6 +61,56 @@ const calcolaLivello = (puntiTotali) => {
 };
 
 const BADGES = [
+  const SFIDE = [
+  { id: 's1', emoji: '🚁', testo: 'Avvista un elicottero', punti: 5, check: (lb, oggi) => lb.some(a => a.tipo === 'elicottero' && a.orario.startsWith(oggi)) },
+  { id: 's2', emoji: '✈️', testo: 'Colleziona 3 aerei in un giorno', punti: 10, check: (lb, oggi) => lb.filter(a => a.orario.startsWith(oggi)).length >= 3 },
+  { id: 's3', emoji: '📏', testo: 'Avvista un aereo sopra 10.000m', punti: 8, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.quota >= 10000) },
+  { id: 's4', emoji: '🌍', testo: 'Avvista aerei di 3 paesi diversi', punti: 8, check: (lb, oggi) => new Set(lb.filter(a => a.orario.startsWith(oggi)).map(a => a.paese)).size >= 3 },
+  { id: 's5', emoji: '💨', testo: 'Avvista un aereo sopra 800 km/h', punti: 6, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.velocita >= 800) },
+  { id: 's6', emoji: '🛩️', testo: 'Colleziona un aereo da 8+ punti', punti: 12, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && calcolaPunti(a) >= 8) },
+  { id: 's7', emoji: '📸', testo: 'Scatta 2 foto in un giorno', punti: 7, check: (lb, oggi) => lb.filter(a => a.orario.startsWith(oggi) && a.fotoUtente).length >= 2 },
+  { id: 's8', emoji: '👑', testo: 'Colleziona un aereo da 15 punti', punti: 20, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && calcolaPunti(a) >= 15) },
+  { id: 's9', emoji: '🏔️', testo: 'Avvista un aereo sopra 12.000m', punti: 10, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.quota >= 12000) },
+  { id: 's10', emoji: '🐢', testo: 'Avvista un aereo sotto 300 km/h', punti: 5, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.velocita > 0 && a.velocita < 300) },
+  { id: 's11', emoji: '🚀', testo: 'Avvista un aereo sopra 900 km/h', punti: 10, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.velocita >= 900) },
+  { id: 's12', emoji: '📡', testo: 'Avvista un aereo sotto 1.000m', punti: 8, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.quota > 0 && a.quota < 1000) },
+  { id: 's13', emoji: '🇩🇪', testo: 'Avvista un aereo tedesco', punti: 6, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.paese === 'Germany') },
+  { id: 's14', emoji: '🇬🇧', testo: 'Avvista un aereo britannico', punti: 6, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.paese === 'United Kingdom') },
+  { id: 's15', emoji: '🇺🇸', testo: 'Avvista un aereo americano', punti: 8, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.paese === 'United States') },
+  { id: 's16', emoji: '🌐', testo: 'Avvista 5 paesi diversi in un giorno', punti: 15, check: (lb, oggi) => new Set(lb.filter(a => a.orario.startsWith(oggi)).map(a => a.paese)).size >= 5 },
+  { id: 's17', emoji: '🛸', testo: 'Colleziona un Boeing 787', punti: 10, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.modello && a.modello.includes('Boeing 787')) },
+  { id: 's18', emoji: '🌅', testo: 'Colleziona un aereo prima delle 9:00', punti: 8, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && parseInt(a.orario.split(' ')[1]) < 9) },
+  { id: 's19', emoji: '🌙', testo: 'Colleziona un aereo dopo le 22:00', punti: 10, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && parseInt(a.orario.split(' ')[1]) >= 22) },
+  { id: 's20', emoji: '📸', testo: 'Scatta 3 foto in un giorno', punti: 10, check: (lb, oggi) => lb.filter(a => a.orario.startsWith(oggi) && a.fotoUtente).length >= 3 },
+  { id: 's21', emoji: '🔥', testo: 'Colleziona 5 aerei in un giorno', punti: 15, check: (lb, oggi) => lb.filter(a => a.orario.startsWith(oggi)).length >= 5 },
+  { id: 's22', emoji: '⭐', testo: 'Colleziona 2 aerei da 6+ punti', punti: 12, check: (lb, oggi) => lb.filter(a => a.orario.startsWith(oggi) && calcolaPunti(a) >= 6).length >= 2 },
+  { id: 's23', emoji: '🏔️', testo: 'Avvista un aereo in crociera (10-11km)', punti: 6, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.quota >= 10000 && a.quota <= 11000) },
+  { id: 's24', emoji: '🚁', testo: 'Colleziona un elicottero con foto', punti: 12, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.tipo === 'elicottero' && a.fotoUtente) },
+  { id: 's25', emoji: '🛩️', testo: 'Colleziona un jet privato', punti: 7, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.modello && (a.modello.includes('Cessna') || a.modello.includes('Cirrus') || a.modello.includes('Bombardier Global'))) },
+  { id: 's26', emoji: '🌍', testo: 'Colleziona aerei di 3 continenti', punti: 15, check: (lb, oggi) => {
+    const paesiOggi = lb.filter(a => a.orario.startsWith(oggi)).map(a => a.paese);
+    const europa = ['Italy','Germany','France','Spain','United Kingdom','Netherlands','Switzerland'];
+    const americas = ['United States','Canada','Brazil','Mexico'];
+    const asia = ['China','Japan','India','Singapore','UAE'];
+    let cont = 0;
+    if (paesiOggi.some(p => europa.includes(p))) cont++;
+    if (paesiOggi.some(p => americas.includes(p))) cont++;
+    if (paesiOggi.some(p => asia.includes(p))) cont++;
+    return cont >= 3;
+  }},
+  { id: 's27', emoji: '📦', testo: 'Colleziona un aereo cargo', punti: 8, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.callsign && (a.callsign.startsWith('UPS') || a.callsign.startsWith('FDX') || a.callsign.startsWith('DHL') || a.callsign.startsWith('TNT'))) },
+  { id: 's28', emoji: '🎯', testo: 'Colleziona un aereo militare', punti: 12, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && calcolaPunti(a) === 10) },
+];
+
+const getSfidaOggi = () => {
+  const oggi = new Date();
+  const seed = oggi.getFullYear() * 10000 + (oggi.getMonth() + 1) * 100 + oggi.getDate();
+  return SFIDE[seed % SFIDE.length];
+};
+
+const getOggiStringa = () => {
+  return new Date().toLocaleDateString('it-IT');
+};
   { id: 'primo_volo', emoji: '🛩️', nome: 'Primo Volo', descrizione: 'Primo aereo collezionato', check: (lb) => lb.length >= 1 },
   { id: 'cacciatore', emoji: '🚁', nome: 'Cacciatore', descrizione: 'Primo elicottero avvistato', check: (lb) => lb.some(a => a.tipo === 'elicottero') },
   { id: 'cacciatore_reale', emoji: '👑', nome: 'Cacciatore Reale', descrizione: 'Avvista un A380', check: (lb) => lb.some(a => a.modello === 'Airbus A380-800') },
@@ -475,8 +525,11 @@ function PaginaProfilo({ logbook, onChiudi }) {
   const [modificaNome, setModificaNome] = useState(false);
   const [nomeTemp, setNomeTemp] = useState(nome);
 
-  const puntiTotali = logbook.reduce((tot, a) => tot + calcolaPunti(a), 0);
-  const livello = calcolaLivello(puntiTotali);
+const puntiBase = logbook.reduce((tot, a) => tot + calcolaPunti(a), 0);
+const sfidaOggi = getSfidaOggi();
+const oggiStr = getOggiStringa();
+const bonusSfida = sfidaOggi.check(logbook, oggiStr) ? sfidaOggi.punti : 0;
+const puntiTotali = puntiBase + bonusSfida;  const livello = calcolaLivello(puntiTotali);
   const badgesSbloccati = BADGES.filter(b => b.check(logbook, puntiTotali));
   const badgesBloccati = BADGES.filter(b => !b.check(logbook, puntiTotali));
   const progressione = ((puntiTotali - livello.min) / (livello.max - livello.min)) * 100;
@@ -587,6 +640,30 @@ function PaginaProfilo({ logbook, onChiudi }) {
         </div>
 
         <div className="profilo-sezione">
+          {(() => {
+  const sfida = getSfidaOggi();
+  const oggi = getOggiStringa();
+  const completata = sfida.check(logbook, oggi);
+  return (
+    <div className="profilo-sezione">
+      <h3 className="profilo-sezione-titolo">🎯 SFIDA DEL GIORNO</h3>
+      <div className={`sfida-card ${completata ? 'completata' : ''}`}>
+        <div className="sfida-card-top">
+          <span className="sfida-emoji-grande">{sfida.emoji}</span>
+          <div className="sfida-card-info">
+            <p className="sfida-card-testo">{sfida.testo}</p>
+            <p className="sfida-card-punti">+{sfida.punti} pt bonus</p>
+          </div>
+          {completata && <span className="sfida-check-grande">✅</span>}
+        </div>
+        {completata
+          ? <p className="sfida-completata-msg">Sfida completata! Punti bonus aggiunti.</p>
+          : <p className="sfida-incompleta-msg">Completa la sfida per guadagnare punti bonus!</p>
+        }
+      </div>
+    </div>
+  );
+})()}
           <h3 className="profilo-sezione-titolo">🏅 BADGE SBLOCCATI</h3>
           {badgesSbloccati.length === 0 ? (
             <p className="profilo-sezione-vuoto">Colleziona aerei per sbloccare badge!</p>
@@ -729,7 +806,21 @@ function App() {
           </button>
         </div>
       </div>
-
+{(() => {
+  const sfida = getSfidaOggi();
+  const oggi = getOggiStringa();
+  const completata = sfida.check(logbook, oggi);
+  return (
+    <div className={`sfida-banner ${completata ? 'completata' : ''}`}>
+      <span className="sfida-emoji">{sfida.emoji}</span>
+      <span className="sfida-testo">
+        <strong>SFIDA DEL GIORNO:</strong> {sfida.testo}
+      </span>
+      <span className="sfida-punti">+{sfida.punti} pt</span>
+      {completata && <span className="sfida-check">✅</span>}
+    </div>
+  );
+})()}
       {mostraImpostazioni && (
         <div className="impostazioni-overlay" onClick={() => setMostraImpostazioni(false)}>
           <div className="impostazioni-pannello" onClick={(e) => e.stopPropagation()}>
