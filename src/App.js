@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -699,7 +699,196 @@ const progressione = ((puntiTotali - livello.min) / (livello.max - livello.min))
     </div>
   );
 }
+function ModalitaAR({ aerei, logbook, onColleziona, onChiudi }) {
+  const videoRef = React.useRef(null);
+  const [bussola, setBussola] = useState(0);
+  const [posizione, setPosizione] = useState(null);
+  const [errore, setErrore] = useState('');
+  const [aereiVisibili, setAereiVisibili] = useState([]);
+  const [fotoUtente, setFotoUtente] = useState(null);
+  const [aereoSelezionato, setAereoSelezionato] = useState(null);
+  const [verificando, setVerificando] = useState(false);
+  const [errFoto, setErrFoto] = useState('');
 
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+  useEffect(() => {
+    if (!isMobile) return;
+
+    navigator.mediaDevices?.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+      .then(stream => { if (videoRef.current) videoRef.current.srcObject = stream; })
+      .catch(() => setErrore('Fotocamera non disponibile'));
+
+    const gpsId = navigator.geolocation?.watchPosition(
+      pos => setPosizione({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => setErrore('GPS non disponibile'),
+      { enableHighAccuracy: true }
+    );
+
+    const gestisciBussola = (e) => {
+      const gradi = e.webkitCompassHeading ?? e.alpha ?? 0;
+      setBussola(gradi);
+    };
+
+    if (window.DeviceOrientationEvent) {
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(r => { if (r === 'granted') window.addEventListener('deviceorientation', gestisciBussola); })
+          .catch(() => setErrore('Bussola non disponibile'));
+      } else {
+        window.addEventListener('deviceorientation', gestisciBussola);
+      }
+    }
+
+    return () => {
+      if (videoRef.current?.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach(t => t.stop());
+      }
+      if (gpsId) navigator.geolocation.clearWatch(gpsId);
+      window.removeEventListener('deviceorientation', gestisciBussola);
+    };
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (!posizione) return;
+
+    const calcolaAngolo = (lat1, lon1, lat2, lon2) => {
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const lat1R = lat1 * Math.PI / 180;
+      const lat2R = lat2 * Math.PI / 180;
+      const y = Math.sin(dLon) * Math.cos(lat2R);
+      const x = Math.cos(lat1R) * Math.sin(lat2R) - Math.sin(lat1R) * Math.cos(lat2R) * Math.cos(dLon);
+      return ((Math.atan2(y, x) * 180 / Math.PI) + 360) % 360;
+    };
+
+    const calcolaDistanza = (lat1, lon1, lat2, lon2) => {
+      const R = 6371;
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(lat1 * Math.PI/180) * Math.cos(lat2 * Math.PI/180) * Math.sin(dLon/2)**2;
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    };
+
+    const visibili = aerei
+      .map(a => {
+        const angolo = calcolaAngolo(posizione.lat, posizione.lng, a.latitudine, a.longitudine);
+        const distanza = calcolaDistanza(posizione.lat, posizione.lng, a.latitudine, a.longitudine);
+        const diff = ((angolo - bussola + 540) % 360) - 180;
+        return { ...a, angolo, distanza, diff };
+      })
+      .filter(a => Math.abs(a.diff) < 30 && a.distanza < 200)
+      .sort((a, b) => Math.abs(a.diff) - Math.abs(b.diff))
+      .slice(0, 3);
+
+    setAereiVisibili(visibili);
+  }, [bussola, posizione, aerei]);
+
+  const gestisciFotoAR = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setVerificando(true);
+    setErrFoto('');
+    try {
+      const compressa = await comprImmagine(file);
+      const verifica = await verificaFoto(compressa);
+      if (!verifica.ok) { setErrFoto(verifica.motivo); setVerificando(false); return; }
+      setFotoUtente(compressa);
+    } catch { setErrFoto('Errore foto'); }
+    setVerificando(false);
+  };
+
+  const collezionaAR = () => {
+    if (!aereoSelezionato || !fotoUtente) return;
+    onColleziona({ ...aereoSelezionato, fotoUtente });
+    setAereoSelezionato(null);
+    setFotoUtente(null);
+  };
+
+  if (!isMobile) return (
+    <div className="ar-overlay">
+      <div className="ar-errore">
+        <p style={{ fontSize: '3rem' }}>📱</p>
+        <p style={{ color: '#4a9fd4', fontFamily: 'Courier New', letterSpacing: '2px' }}>
+          MODALITÀ AR
+        </p>
+        <p style={{ color: '#4a6fa5', fontFamily: 'Courier New', fontSize: '0.85rem', textAlign: 'center' }}>
+          Disponibile solo dal telefono.<br/>Apri SkyDex dal tuo smartphone!
+        </p>
+        <button className="logbook-chiudi" onClick={onChiudi}>✕ Chiudi</button>
+      </div>
+    </div>
+  );
+
+  if (errore) return (
+    <div className="ar-overlay">
+      <div className="ar-errore">
+        <p>❌ {errore}</p>
+        <button className="logbook-chiudi" onClick={onChiudi}>Chiudi</button>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="ar-overlay">
+      <video ref={videoRef} autoPlay playsInline muted className="ar-video" />
+
+      <div className="ar-header">
+        <span className="ar-bussola">🧭 {Math.round(bussola)}°</span>
+        <button className="ar-chiudi" onClick={onChiudi}>✕</button>
+      </div>
+
+      <div className="ar-aerei">
+        {aereiVisibili.length === 0 ? (
+          <div className="ar-nessuno">Punta verso un aereo ✈️</div>
+        ) : (
+          aereiVisibili.map(aereo => {
+            const collezionato = logbook.some(a => a.id === aereo.id);
+            const selezionato = aereoSelezionato?.id === aereo.id;
+            const posX = 50 + (aereo.diff / 30) * 40;
+            return (
+              <div
+                key={aereo.id}
+                className={`ar-tag ${selezionato ? 'selezionato' : ''}`}
+                style={{ left: `${posX}%` }}
+                onClick={() => { setAereoSelezionato(aereo); setFotoUtente(null); setErrFoto(''); }}
+              >
+                <p className="ar-callsign">{aereo.tipo === 'elicottero' ? '🚁' : '✈️'} {aereo.callsign}</p>
+                {aereo.modello && aereo.modello !== 'N/D' && <p className="ar-modello">{aereo.modello}</p>}
+                <p className="ar-dati">{aereo.quota}m · {aereo.velocita}km/h</p>
+                <p className="ar-dist">{Math.round(aereo.distanza)} km</p>
+                {collezionato && <p className="ar-gia">⭐ Già collezionato</p>}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {aereoSelezionato && !logbook.some(a => a.id === aereoSelezionato.id) && (
+        <div className="ar-colleziona">
+          <p className="ar-colleziona-titolo">📸 Scatta foto per collezionare</p>
+          <p className="ar-colleziona-nome">{aereoSelezionato.callsign} — {aereoSelezionato.modello}</p>
+          {fotoUtente ? (
+            <div className="ar-foto-preview-wrap">
+              <img src={fotoUtente} alt="foto" className="ar-foto-preview" />
+              <div className="ar-foto-bottoni">
+                <button className="btn-colleziona" onClick={collezionaAR}>⭐ Colleziona!</button>
+                <button className="btn-gia" onClick={() => setFotoUtente(null)}>🔄 Riprova</button>
+              </div>
+            </div>
+          ) : (
+            <label className="btn-scatta">
+              📸 Scatta foto
+              <input type="file" accept="image/*" capture="environment" onChange={gestisciFotoAR} style={{ display: 'none' }} />
+            </label>
+          )}
+          {verificando && <p className="foto-verifica">🔍 Verifico...</p>}
+          {errFoto && <p className="foto-errore">❌ {errFoto}</p>}
+          <button className="ar-annulla" onClick={() => { setAereoSelezionato(null); setFotoUtente(null); }}>Annulla</button>
+        </div>
+      )}
+    </div>
+  );
+}
 function App() {
   const [aerei, setAerei] = useState([]);
   const [status, setStatus] = useState('Caricamento...');
@@ -716,7 +905,7 @@ function App() {
   const [mostraImpostazioni, setMostraImpostazioni] = useState(false);
   const [mappaScura, setMappaScura] = useState(false);
  const [mostraClassifica, setMostraClassifica] = useState(false);
-
+const [mostraAR, setMostraAR] = useState(false);
   const fetchAerei = async () => {
     try {
       setStatus('Connessione...');
@@ -781,7 +970,14 @@ function App() {
   if (mostraLogbook) {
     return <PaginaLogbook logbook={logbook} onChiudi={() => setMostraLogbook(false)} onRimuovi={rimuovi} />;
   }
-
+if (mostraAR) {
+  return <ModalitaAR
+    aerei={aerei}
+    logbook={logbook}
+    onColleziona={colleziona}
+    onChiudi={() => setMostraAR(false)}
+  />;
+}
   if (mostraProfilo) {
     return <PaginaProfilo logbook={logbook} onChiudi={() => setMostraProfilo(false)} />;
   }
@@ -799,6 +995,9 @@ function App() {
         </div>
         <div className="header-destra">
           <span className="contatore">{gpsStatus || status}</span>
+          <button className="btn-ar" onClick={() => setMostraAR(true)}>
+  📷 AR
+</button>
           <button className={`btn-gps ${gpsAttivo ? 'attivo' : ''}`} onClick={attivaGps}>
             📍 {gpsAttivo ? 'GPS ON' : 'GPS'}
           </button>

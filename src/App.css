@@ -860,3 +860,213 @@ body { background: #0a1628; font-family: 'Courier New', monospace; }
   font-size: 0.85rem;
   letter-spacing: 1px;
 }
+.ar-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+}
+
+.ar-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ar-errore {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 40px;
+}
+
+.ar-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  z-index: 10;
+}
+
+.ar-bussola {
+  color: #4a9fd4;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  background: #0a1628aa;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.ar-chiudi {
+  background: #0a1628aa;
+  border: 1px solid #4a9fd444;
+  color: #ff4444;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ar-aerei {
+  position: absolute;
+  top: 30%;
+  left: 0;
+  right: 0;
+  height: 200px;
+  z-index: 10;
+}
+
+.ar-tag {
+  position: absolute;
+  transform: translateX(-50%);
+  background: #0a1628cc;
+  border: 1px solid #4a9fd4;
+  border-radius: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  min-width: 130px;
+  text-align: center;
+}
+
+.ar-tag.selezionato {
+  border-color: #FFD700;
+  background: #0a1628ee;
+}
+
+.ar-callsign {
+  color: #4a9fd4;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  font-weight: bold;
+  margin-bottom: 2px;
+}
+
+.ar-modello {
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  margin-bottom: 2px;
+}
+
+.ar-dati {
+  color: #aabbcc;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  margin-bottom: 2px;
+}
+
+.ar-dist {
+  color: #4a6fa5;
+  font-family: 'Courier New', monospace;
+  font-size: 0.65rem;
+}
+
+.ar-gia {
+  color: #FFD700;
+  font-size: 0.7rem;
+  margin-top: 4px;
+}
+
+.ar-nessuno {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0a1628cc;
+  border: 1px solid #2d6ea844;
+  border-radius: 10px;
+  padding: 12px 20px;
+  color: #4a6fa5;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+.ar-colleziona {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #0a1628ee;
+  border-top: 1px solid #4a9fd444;
+  padding: 16px 20px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ar-colleziona-titolo {
+  color: #4a9fd4;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+}
+
+.ar-colleziona-nome {
+  color: #ffffff;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.ar-foto-preview-wrap {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.ar-foto-preview {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #4a9fd444;
+}
+
+.ar-foto-bottoni {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.ar-annulla {
+  background: transparent;
+  border: none;
+  color: #4a6fa5;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  cursor: pointer;
+  text-align: center;
+  padding: 4px;
+}
+
+.btn-ar {
+  background: #4a9fd422;
+  color: #4a9fd4;
+  border: 1px solid #4a9fd4;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.btn-ar:hover { background: #4a9fd444; }
