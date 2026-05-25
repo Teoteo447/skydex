@@ -741,8 +741,8 @@ function ModalitaAR({ aerei, logbook, onColleziona, onChiudi }) {
     }
 
     return () => {
-      const video = videoRef.current;
-      if (video?.srcObject) {
+// eslint-disable-next-line react-hooks/exhaustive-deps
+      const video = videoRef.current;      if (video?.srcObject) {
         video.srcObject.getTracks().forEach(t => t.stop());
       }
       if (gpsId) navigator.geolocation.clearWatch(gpsId);
