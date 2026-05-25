@@ -510,7 +510,74 @@ function PaginaLogbook({ logbook, onChiudi, onRimuovi }) {
     </div>
   );
 }
+const AEROPORTI = [
+  { nome: 'Roma Fiumicino', iata: 'FCO', lat: 41.8003, lng: 12.2389 },
+  { nome: 'Milano Malpensa', iata: 'MXP', lat: 45.6306, lng: 8.7281 },
+  { nome: 'Milano Linate', iata: 'LIN', lat: 45.4453, lng: 9.2768 },
+  { nome: 'Venezia Marco Polo', iata: 'VCE', lat: 45.5053, lng: 12.3519 },
+  { nome: 'Bergamo Orio al Serio', iata: 'BGY', lat: 45.6739, lng: 9.7042 },
+  { nome: 'Catania Fontanarossa', iata: 'CTA', lat: 37.4668, lng: 15.0664 },
+  { nome: 'Napoli Capodichino', iata: 'NAP', lat: 40.8860, lng: 14.2908 },
+  { nome: 'Bologna Borgo Panigale', iata: 'BLQ', lat: 44.5354, lng: 11.2887 },
+  { nome: 'Palermo Falcone Borsellino', iata: 'PMO', lat: 38.1759, lng: 13.0910 },
+  { nome: 'Bari Karol Wojtyla', iata: 'BRI', lat: 41.1389, lng: 16.7606 },
+  { nome: 'Torino Caselle', iata: 'TRN', lat: 45.2008, lng: 7.6497 },
+  { nome: 'Firenze Peretola', iata: 'FLR', lat: 43.8100, lng: 11.2051 },
+  { nome: 'Genova Cristoforo Colombo', iata: 'GOA', lat: 44.4133, lng: 8.8375 },
+  { nome: 'Cagliari Elmas', iata: 'CAG', lat: 39.2515, lng: 9.0543 },
+  { nome: 'Pisa Galileo Galilei', iata: 'PSA', lat: 43.6839, lng: 10.3927 },
+  { nome: 'Verona Villafranca', iata: 'VRN', lat: 45.3957, lng: 10.8885 },
+  { nome: 'Olbia Costa Smeralda', iata: 'OLB', lat: 40.8987, lng: 9.5176 },
+  { nome: 'Catanzaro Lamezia Terme', iata: 'SUF', lat: 38.9054, lng: 16.2423 },
+  { nome: 'Trieste', iata: 'TRS', lat: 45.8275, lng: 13.4722 },
+  { nome: 'Brescia Montichiari', iata: 'VBS', lat: 45.4288, lng: 10.3306 },
+  { nome: 'Ancona Falconara', iata: 'AOI', lat: 43.6163, lng: 13.3622 },
+  { nome: 'Alghero Fertilia', iata: 'AHO', lat: 40.6321, lng: 8.2908 },
+  { nome: 'Brindisi Papola Casale', iata: 'BDS', lat: 40.6576, lng: 17.9470 },
+  { nome: 'Reggio Calabria', iata: 'REG', lat: 38.0712, lng: 15.6516 },
+  { nome: 'Trapani Birgi', iata: 'TPS', lat: 37.9114, lng: 12.4880 },
+  { nome: 'Perugia San Francesco', iata: 'PEG', lat: 43.0959, lng: 12.5132 },
+  { nome: 'Pescara', iata: 'PSR', lat: 42.4317, lng: 14.1811 },
+  { nome: 'Rimini Federico Fellini', iata: 'RMI', lat: 44.0203, lng: 12.6117 },
+  { nome: 'Treviso', iata: 'TSF', lat: 45.6484, lng: 12.1944 },
+  { nome: 'Bolzano', iata: 'BZO', lat: 46.4602, lng: 11.3264 },
+  { nome: 'Cuneo Levaldigi', iata: 'CUF', lat: 44.5470, lng: 7.6232 },
+  { nome: 'Foggia Gino Lisa', iata: 'FOG', lat: 41.4329, lng: 15.5350 },
+  { nome: 'Comiso', iata: 'CIY', lat: 36.9946, lng: 14.6072 },
+  { nome: 'Crotone', iata: 'CRV', lat: 38.9972, lng: 17.0802 },
+  { nome: 'Lampedusa', iata: 'LMP', lat: 35.4979, lng: 12.6181 },
+  { nome: 'Pantelleria', iata: 'PNL', lat: 36.8165, lng: 11.9689 },
+  { nome: 'Taranto Grottaglie', iata: 'TAR', lat: 40.5175, lng: 17.4032 },
+  { nome: 'Parma', iata: 'PMF', lat: 44.8245, lng: 10.2964 },
+  { nome: 'Aosta', iata: 'AOT', lat: 45.7384, lng: 7.3603 },
+  { nome: 'Salerno Costa d\'Amalfi', iata: 'QSR', lat: 40.6204
+    { nome: 'Salerno Costa d\'Amalfi', iata: 'QSR', lat: 40.6204, lng: 14.9113 },
+  { nome: 'Messina', iata: 'MSN', lat: 38.1868, lng: 15.5577 },
+  { nome: 'Urbino', iata: 'URB', lat: 43.7285, lng: 12.6298 },
+  { nome: 'Venezia Tessera', iata: 'VCE', lat: 45.5053, lng: 12.3519 },
+];
 
+const creaIconaAeroporto = (iata) => new L.DivIcon({
+  html: `<div style="
+    background: #1a4a8a;
+    border: 2px solid #4a9fd4;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Courier New, monospace;
+    font-size: 8px;
+    font-weight: bold;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    box-shadow: 0 0 6px #4a9fd444;
+  ">${iata}</div>`,
+  className: '',
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
+});
 function CentraGps({ posizione }) {
   const map = useMap();
   useEffect(() => {
@@ -1127,6 +1194,20 @@ if (mostraAR) {
             }
             attribution='© OpenStreetMap © CARTO'
           />
+          {AEROPORTI.map(a => (
+  <Marker
+    key={a.iata}
+    position={[a.lat, a.lng]}
+    icon={creaIconaAeroporto(a.iata)}
+  >
+    <Popup>
+      <div className="popup">
+        <h3>🛬 {a.nome}</h3>
+        <p>📡 IATA: {a.iata}</p>
+      </div>
+    </Popup>
+  </Marker>
+))}
           {posizione && <CentraGps posizione={posizione} />}
           {posizione && (
             <Marker position={[posizione.lat, posizione.lng]} icon={iconaGps}>
