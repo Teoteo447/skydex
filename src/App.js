@@ -715,8 +715,8 @@ function App() {
   const [gpsStatus, setGpsStatus] = useState('');
   const [mostraImpostazioni, setMostraImpostazioni] = useState(false);
   const [mappaScura, setMappaScura] = useState(false);
-  const [mostraClassifica, setMostraClassifica] = useState(false);
-const [mostraClassifica, setMostraClassifica] = useState(false);
+ const [mostraClassifica, setMostraClassifica] = useState(false);
+
   const fetchAerei = async () => {
     try {
       setStatus('Connessione...');
