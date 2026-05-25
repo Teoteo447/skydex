@@ -61,7 +61,16 @@ const calcolaLivello = (puntiTotali) => {
 };
 
 const BADGES = [
-  const SFIDE = [
+  { id: 'primo_volo', emoji: '🛩️', nome: 'Primo Volo', descrizione: 'Primo aereo collezionato', check: (lb) => lb.length >= 1 },
+  { id: 'cacciatore', emoji: '🚁', nome: 'Cacciatore', descrizione: 'Primo elicottero avvistato', check: (lb) => lb.some(a => a.tipo === 'elicottero') },
+  { id: 'cacciatore_reale', emoji: '👑', nome: 'Cacciatore Reale', descrizione: 'Avvista un A380', check: (lb) => lb.some(a => a.modello === 'Airbus A380-800') },
+  { id: 'globetrotter', emoji: '🌍', nome: 'Globetrotter', descrizione: '10 paesi diversi', check: (lb) => new Set(lb.map(a => a.paese)).size >= 10 },
+  { id: 'fotografo', emoji: '📸', nome: 'Fotografo', descrizione: '10 foto scattate', check: (lb) => lb.filter(a => a.fotoUtente).length >= 10 },
+  { id: 'collezionista', emoji: '⭐', nome: 'Collezionista', descrizione: '50 aerei collezionati', check: (lb) => lb.length >= 50 },
+  { id: 'leggenda', emoji: '🏆', nome: 'Leggenda', descrizione: 'Raggiungi livello 7', check: (lb, punti) => punti >= 1001 },
+];
+
+const SFIDE = [
   { id: 's1', emoji: '🚁', testo: 'Avvista un elicottero', punti: 5, check: (lb, oggi) => lb.some(a => a.tipo === 'elicottero' && a.orario.startsWith(oggi)) },
   { id: 's2', emoji: '✈️', testo: 'Colleziona 3 aerei in un giorno', punti: 10, check: (lb, oggi) => lb.filter(a => a.orario.startsWith(oggi)).length >= 3 },
   { id: 's3', emoji: '📏', testo: 'Avvista un aereo sopra 10.000m', punti: 8, check: (lb, oggi) => lb.some(a => a.orario.startsWith(oggi) && a.quota >= 10000) },
@@ -111,14 +120,7 @@ const getSfidaOggi = () => {
 const getOggiStringa = () => {
   return new Date().toLocaleDateString('it-IT');
 };
-  { id: 'primo_volo', emoji: '🛩️', nome: 'Primo Volo', descrizione: 'Primo aereo collezionato', check: (lb) => lb.length >= 1 },
-  { id: 'cacciatore', emoji: '🚁', nome: 'Cacciatore', descrizione: 'Primo elicottero avvistato', check: (lb) => lb.some(a => a.tipo === 'elicottero') },
-  { id: 'cacciatore_reale', emoji: '👑', nome: 'Cacciatore Reale', descrizione: 'Avvista un A380', check: (lb) => lb.some(a => a.modello === 'Airbus A380-800') },
-  { id: 'globetrotter', emoji: '🌍', nome: 'Globetrotter', descrizione: '10 paesi diversi', check: (lb) => new Set(lb.map(a => a.paese)).size >= 10 },
-  { id: 'fotografo', emoji: '📸', nome: 'Fotografo', descrizione: '10 foto scattate', check: (lb) => lb.filter(a => a.fotoUtente).length >= 10 },
-  { id: 'collezionista', emoji: '⭐', nome: 'Collezionista', descrizione: '50 aerei collezionati', check: (lb) => lb.length >= 50 },
-  { id: 'leggenda', emoji: '🏆', nome: 'Leggenda', descrizione: 'Raggiungi livello 7', check: (lb, punti) => punti >= 1001 },
-];
+  
 
 const creaIcona = (tipo, collezionato) => {
   if (collezionato) return new L.DivIcon({ html: '⭐', className: '', iconSize: [24,24], iconAnchor: [12,12] });
@@ -529,10 +531,11 @@ const puntiBase = logbook.reduce((tot, a) => tot + calcolaPunti(a), 0);
 const sfidaOggi = getSfidaOggi();
 const oggiStr = getOggiStringa();
 const bonusSfida = sfidaOggi.check(logbook, oggiStr) ? sfidaOggi.punti : 0;
-const puntiTotali = puntiBase + bonusSfida;  const livello = calcolaLivello(puntiTotali);
-  const badgesSbloccati = BADGES.filter(b => b.check(logbook, puntiTotali));
-  const badgesBloccati = BADGES.filter(b => !b.check(logbook, puntiTotali));
-  const progressione = ((puntiTotali - livello.min) / (livello.max - livello.min)) * 100;
+const puntiTotali = puntiBase + bonusSfida;
+const livello = calcolaLivello(puntiTotali);
+const badgesSbloccati = BADGES.filter(b => b.check(logbook, puntiTotali));
+const badgesBloccati = BADGES.filter(b => !b.check(logbook, puntiTotali));
+const progressione = ((puntiTotali - livello.min) / (livello.max - livello.min)) * 100;
 
   const salvaNome = () => {
     setNome(nomeTemp);
