@@ -550,7 +550,6 @@ const AEROPORTI = [
   { nome: 'Taranto Grottaglie', iata: 'TAR', lat: 40.5175, lng: 17.4032 },
   { nome: 'Parma', iata: 'PMF', lat: 44.8245, lng: 10.2964 },
   { nome: 'Aosta', iata: 'AOT', lat: 45.7384, lng: 7.3603 },
-  { nome: 'Salerno Costa d\'Amalfi', iata: 'QSR', lat: 40.6204
     { nome: 'Salerno Costa d\'Amalfi', iata: 'QSR', lat: 40.6204, lng: 14.9113 },
   { nome: 'Messina', iata: 'MSN', lat: 38.1868, lng: 15.5577 },
   { nome: 'Urbino', iata: 'URB', lat: 43.7285, lng: 12.6298 },
