@@ -715,7 +715,8 @@ function App() {
   const [gpsStatus, setGpsStatus] = useState('');
   const [mostraImpostazioni, setMostraImpostazioni] = useState(false);
   const [mappaScura, setMappaScura] = useState(false);
-
+  const [mostraClassifica, setMostraClassifica] = useState(false);
+const [mostraClassifica, setMostraClassifica] = useState(false);
   const fetchAerei = async () => {
     try {
       setStatus('Connessione...');
@@ -824,6 +825,67 @@ function App() {
     </div>
   );
 })()}
+{mostraClassifica && (
+  <div className="impostazioni-overlay" onClick={() => setMostraClassifica(false)}>
+    <div className="classifica-pannello" onClick={(e) => e.stopPropagation()}>
+      <div className="impostazioni-header">
+        <h2 className="impostazioni-titolo">📊 CLASSIFICA PUNTI</h2>
+        <button className="scheda-chiudi" onClick={() => setMostraClassifica(false)}>✕</button>
+      </div>
+      <div className="classifica-lista">
+        {[
+          { emoji: '👑', punti: 15, label: 'Leggendario', esempi: 'A380, B747, An-124' },
+          { emoji: '⚔️', punti: 10, label: 'Militare', esempi: 'C-130, F-15, F-16, C-17' },
+          { emoji: '💎', punti: 8, label: 'Widebody raro', esempi: 'B787, A350, A340' },
+          { emoji: '🌟', punti: 6, label: 'Widebody comune', esempi: 'B777, A330, B767' },
+          { emoji: '🚁', punti: 5, label: 'Elicottero', esempi: 'Qualsiasi elicottero' },
+          { emoji: '🔧', punti: 4, label: 'Regionale/Cargo', esempi: 'ATR, CRJ, Dash 8' },
+          { emoji: '🛩️', punti: 3, label: 'Privato/Leggero', esempi: 'Cessna, Cirrus, Piper' },
+          { emoji: '✈️', punti: 2, label: 'Narrowbody', esempi: 'B737, A320, A321' },
+        ].map((r, i) => (
+          <div key={i} className="classifica-riga">
+            <span className="classifica-emoji">{r.emoji}</span>
+            <div className="classifica-info">
+              <span className="classifica-label">{r.label}</span>
+              <span className="classifica-esempi">{r.esempi}</span>
+            </div>
+            <span className="classifica-punti">+{r.punti} pt</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}{mostraClassifica && (
+  <div className="impostazioni-overlay" onClick={() => setMostraClassifica(false)}>
+    <div className="classifica-pannello" onClick={(e) => e.stopPropagation()}>
+      <div className="impostazioni-header">
+        <h2 className="impostazioni-titolo">📊 CLASSIFICA PUNTI</h2>
+        <button className="scheda-chiudi" onClick={() => setMostraClassifica(false)}>✕</button>
+      </div>
+      <div className="classifica-lista">
+        {[
+          { emoji: '👑', punti: 15, label: 'Leggendario', esempi: 'A380, B747, An-124' },
+          { emoji: '⚔️', punti: 10, label: 'Militare', esempi: 'C-130, F-15, F-16, C-17' },
+          { emoji: '💎', punti: 8, label: 'Widebody raro', esempi: 'B787, A350, A340' },
+          { emoji: '🌟', punti: 6, label: 'Widebody comune', esempi: 'B777, A330, B767' },
+          { emoji: '🚁', punti: 5, label: 'Elicottero', esempi: 'Qualsiasi elicottero' },
+          { emoji: '🔧', punti: 4, label: 'Regionale/Cargo', esempi: 'ATR, CRJ, Dash 8' },
+          { emoji: '🛩️', punti: 3, label: 'Privato/Leggero', esempi: 'Cessna, Cirrus, Piper' },
+          { emoji: '✈️', punti: 2, label: 'Narrowbody', esempi: 'B737, A320, A321' },
+        ].map((r, i) => (
+          <div key={i} className="classifica-riga">
+            <span className="classifica-emoji">{r.emoji}</span>
+            <div className="classifica-info">
+              <span className="classifica-label">{r.label}</span>
+              <span className="classifica-esempi">{r.esempi}</span>
+            </div>
+            <span className="classifica-punti">+{r.punti} pt</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
       {mostraImpostazioni && (
         <div className="impostazioni-overlay" onClick={() => setMostraImpostazioni(false)}>
           <div className="impostazioni-pannello" onClick={(e) => e.stopPropagation()}>
@@ -838,6 +900,12 @@ function App() {
               </button>
             </div>
             <div className="impostazioni-voce">
+             <div className="impostazioni-voce">
+  <span className="impostazioni-label">📊 Classifica punti</span>
+  <button className="toggle" onClick={() => { setMostraImpostazioni(false); setMostraClassifica(true); }}>
+    APRI
+  </button>
+</div> 
               <span className="impostazioni-label">🌙 Mappa scura</span>
               <button
                 className={`toggle ${mappaScura ? 'attivo' : ''}`}
