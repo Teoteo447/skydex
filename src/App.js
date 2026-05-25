@@ -742,7 +742,14 @@ function ModalitaAR({ aerei, logbook, onColleziona, onChiudi }) {
 
     return () => {
       if (videoRef.current?.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach(t => t.stop());
+        return () => {
+  const video = videoRef.current;
+  if (video?.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+  }
+  if (gpsId) navigator.geolocation.clearWatch(gpsId);
+  window.removeEventListener('deviceorientation', gestisciBussola);
+};().forEach(t => t.stop());
       }
       if (gpsId) navigator.geolocation.clearWatch(gpsId);
       window.removeEventListener('deviceorientation', gestisciBussola);
